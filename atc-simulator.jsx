@@ -1,0 +1,805 @@
+import { useState, useRef } from "react";
+
+const scenarios = {
+
+  // ══════════════════════════════════════════════════
+  //  STUDENT PILOT  (15 unique scenarios)
+  // ══════════════════════════════════════════════════
+  student: [
+    {
+      id: "s01",
+      atcMessage: "Cessna 172, November 7-2-3-Tango-Foxtrot, Riverside Ground, runway 9 right, taxi via Alpha, hold short of runway 27.",
+      situation: "You've completed your preflight at Riverside Airport (KRAL) and are ready for your first dual lesson with your CFI.",
+      options: [
+        { text: "Runway 9 right, taxi via Alpha, hold short runway 27, November 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, taxiing to runway 9 right.", correct: false },
+        { text: "Wilco, November 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Copied, heading to runway 9.", correct: false },
+      ],
+      explanation: "Always read back runway assignments, taxi routes, AND hold short instructions verbatim with your call sign. 'Roger' or 'Wilco' alone are never acceptable for clearances — ATC needs to hear the specific instructions repeated to confirm you understood.",
+    },
+    {
+      id: "s02",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, winds 090 at 8, runway 9 right, cleared for takeoff.",
+      situation: "You're lined up on runway 9 right at Riverside, waiting for takeoff clearance for your first supervised flight.",
+      options: [
+        { text: "Cleared for takeoff runway 9 right, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, taking off now.", correct: false },
+        { text: "Cleared for takeoff, wilco.", correct: false },
+        { text: "Thank you, departing runway 9, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Takeoff clearances MUST include the phrase 'cleared for takeoff' and the specific runway. 'Thank you' is informal and non-standard. The runway is a mandatory readback item per FAA Order 7110.65.",
+    },
+    {
+      id: "s03",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, make right traffic runway 9 right, report downwind.",
+      situation: "You're returning from your first supervised lesson and tower is setting up your traffic pattern entry.",
+      options: [
+        { text: "Right traffic runway 9 right, will report downwind, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, making right traffic.", correct: false },
+        { text: "Copy right traffic, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Traffic pattern instructions need a full readback: direction, runway, and your commitment to report at the requested position. 'Roger' only acknowledges receipt — it doesn't confirm you understood the specific instructions.",
+    },
+    {
+      id: "s04",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, traffic 12 o'clock, 2 miles, opposite direction, Piper Cherokee, altitude unknown.",
+      situation: "You're on a practice cross-country and ATC has called traffic you cannot yet see out the windshield.",
+      options: [
+        { text: "Traffic in sight, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Looking for traffic, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Negative contact, maintaining VFR, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "If you DON'T have the traffic in sight, say 'Looking for traffic' — NOT 'Negative contact' (that's IFR terminology) and not just 'Roger.' This signals to ATC you're actively scanning and may need further advisories.",
+    },
+    {
+      id: "s05",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, squawk 4521.",
+      situation: "You've just entered Class C airspace around Sacramento Executive Airport on a VFR sightseeing flight.",
+      options: [
+        { text: "Squawking 4521, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "4521 set, wilco.", correct: false },
+        { text: "Setting transponder now, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Transponder codes must be read back with the exact four-digit code plus your call sign. A single-digit error can cause radar confusion and loss of separation. Always confirm the specific digits.",
+    },
+    {
+      id: "s06",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, say altitude.",
+      situation: "You're flying through Class D airspace at Fullerton Airport and ATC needs to verify your altitude for traffic separation.",
+      options: [
+        { text: "Altitude 3,500, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "We're at about 3,500 feet, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Roger, 3,500, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Climbing through 3,500, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "When ATC says 'say altitude,' respond with 'Altitude [number].' Don't say 'about' — be precise. If you're level at 3,500, don't add 'climbing' or 'descending' unless that's actually the case.",
+    },
+    {
+      id: "s07",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, hold short of runway 27, traffic on final.",
+      situation: "You're crossing a taxiway at Long Beach Airport and approaching an active runway intersection.",
+      options: [
+        { text: "Holding short runway 27, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, stopping short, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Copy, holding, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Hold short instructions are MANDATORY readback items per FAA regulations. Failure to read them back has contributed to numerous runway incursions. You must say 'holding short' and name the specific runway.",
+    },
+    {
+      id: "s08",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, turn left heading 180, climb and maintain 2,500.",
+      situation: "Tower is vectoring you away from an inbound aircraft shortly after your departure from Camarillo Airport.",
+      options: [
+        { text: "Left heading 180, climb and maintain 2,500, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Turning left, climbing to 2,500, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Roger, 180 and 2,500, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Left 180 and climbing, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Both the heading AND altitude must be fully read back using standard phraseology: 'left heading [xxx]' and 'climb and maintain [altitude].' Abbreviating creates ambiguity that could affect separation with other aircraft.",
+    },
+    {
+      id: "s09",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, cleared to land runway 27, wind 280 at 10.",
+      situation: "You're on a 2-mile final at Van Nuys Airport after practicing maneuvers in the practice area.",
+      options: [
+        { text: "Cleared to land runway 27, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Cleared to land, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Roger, runway 27, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Cleared to land 27, wind copied, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Landing clearances MUST include 'cleared to land' and the runway number. You don't need to read back wind info, but the runway is a required readback item. Omitting the runway could lead to landing on the wrong surface.",
+    },
+    {
+      id: "s10",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, contact SoCal Approach on 124.0.",
+      situation: "You're departing Santa Monica Airport's Class D airspace on your first solo cross-country and tower is handing you off.",
+      options: [
+        { text: "124.0, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, switching, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Contacting approach, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Frequency changes require reading back the specific frequency number. Saying 'switching' or 'wilco' doesn't confirm you received the correct frequency — you might tune the wrong one.",
+    },
+    {
+      id: "s11",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, make a 360 for spacing, report when complete.",
+      situation: "Tower has another aircraft turning final ahead of you. You're on a left downwind leg at Torrance Airport.",
+      options: [
+        { text: "Making a 360, will report when complete, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "360, wilco, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Turning 360 degrees now, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "When ATC gives you an instruction AND asks you to report, you must read back the instruction AND confirm you'll report. Option D is technically understandable, but '360 degrees' is redundant — a 360 turn is inherently 360 degrees. The standard phrasing is 'making a 360.'",
+    },
+    {
+      id: "s12",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, extend downwind, I'll call your base.",
+      situation: "You're flying the traffic pattern at Corona Municipal Airport and tower needs additional spacing.",
+      options: [
+        { text: "Extending downwind, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, extended downwind, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Copy, extending, awaiting base call, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Read back the specific instruction: 'extending downwind.' You don't need to repeat 'I'll call your base' back — ATC knows what they said. 'Roger' alone doesn't confirm you understood what action to take.",
+    },
+    {
+      id: "s13",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, number two to land, follow the Piper on left base.",
+      situation: "You're entering the downwind leg at Brackett Field and there's another aircraft ahead of you in the pattern.",
+      options: [
+        { text: "Number two, following the Piper on base, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, number two, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Traffic in sight, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, following traffic, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "When given a sequence number and a 'follow' instruction, read back both your sequence AND confirm you have the traffic you're following. Simply saying 'number two' doesn't confirm you see the aircraft you're supposed to follow, which is critical for separation.",
+    },
+    {
+      id: "s14",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, winds calm, runway 24, cleared for the option.",
+      situation: "You're doing touch-and-go practice with your instructor at Hawthorne Airport and ATC has just issued a clearance.",
+      options: [
+        { text: "Cleared for the option runway 24, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Cleared to land runway 24, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Roger, cleared for the option, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Cleared for touch-and-go, runway 24, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "'Cleared for the option' is a specific clearance allowing you to do a touch-and-go, stop-and-go, full stop, or low approach at your discretion. You must read it back exactly — NOT 'cleared to land' (different clearance) and NOT 'cleared for touch-and-go' (too specific).",
+    },
+    {
+      id: "s15",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, unable approve the Class C transition. Suggest you proceed via the coast at or below 1,500.",
+      situation: "You requested a Class C airspace transition over the Los Angeles basin but ATC cannot accommodate you today.",
+      options: [
+        { text: "Proceeding via the coast at or below 1,500, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Wilco, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Unable, request the transition again, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Roger, we'll stay clear of Class C, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "When ATC suggests an alternative route with an altitude restriction, read back the route AND the altitude limit. 'Wilco' alone doesn't confirm you understood the 1,500 foot restriction. Option D is vague — 'clear of Class C' doesn't confirm you accepted the specific coastal routing.",
+    },
+  ],
+
+  // ══════════════════════════════════════════════════
+  //  GENERAL AVIATION  (15 unique scenarios)
+  // ══════════════════════════════════════════════════
+  general: [
+    {
+      id: "g01",
+      atcMessage: "Piper Arrow November 4-5-6-Bravo-Lima, Denver Approach, descend and maintain 9,000, expect ILS runway 35L approach.",
+      situation: "You're inbound to Denver International (KDEN) on an IFR flight plan from Colorado Springs.",
+      options: [
+        { text: "Descend and maintain 9,000, expect ILS 35L, November 4-5-6-Bravo-Lima.", correct: true },
+        { text: "Down to 9,000, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "Roger, descending 9,000, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "Wilco, November 4-5-6-Bravo-Lima.", correct: false },
+      ],
+      explanation: "IFR altitude clearances require a full readback of the altitude AND the expected approach type. The full standard phrase 'descend and maintain' must be used — not abbreviated to 'down to' — because the exact phraseology carries regulatory weight.",
+    },
+    {
+      id: "g02",
+      atcMessage: "Piper 4-5-6-Bravo-Lima, fly heading 270, vectors for the ILS.",
+      situation: "Denver Approach is vectoring you for the ILS approach to runway 35L in IMC conditions.",
+      options: [
+        { text: "Heading 270, 4-5-6-Bravo-Lima.", correct: true },
+        { text: "Roger, turning left to 270.", correct: false },
+        { text: "Fly 270, wilco.", correct: false },
+        { text: "Understood, vectoring for ILS.", correct: false },
+      ],
+      explanation: "Heading assignments require a readback of the specific heading number with your call sign. ATC needs to hear the exact heading confirmed — 'Roger' or 'Wilco' don't verify you received the correct three-digit heading.",
+    },
+    {
+      id: "g03",
+      atcMessage: "Piper 4-5-6-Bravo-Lima, cross LINND intersection at or above 11,000, cleared ILS runway 35L approach.",
+      situation: "You're being cleared for the ILS 35L at Denver with a crossing restriction at an intermediate fix.",
+      options: [
+        { text: "Cross LINND at or above 11,000, cleared ILS runway 35L approach, 4-5-6-Bravo-Lima.", correct: true },
+        { text: "Cleared ILS 35L, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "Roger, cleared for the approach, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "Copy approach clearance, 4-5-6-Bravo-Lima.", correct: false },
+      ],
+      explanation: "Approach clearances with crossing restrictions require a full readback of BOTH the restriction and the approach clearance. Missing the LINND at 11,000 restriction could cause a conflict with departing traffic.",
+    },
+    {
+      id: "g04",
+      atcMessage: "Piper 4-5-6-Bravo-Lima, contact Denver Tower on 118.3, good day.",
+      situation: "Denver Approach is handing you off to Denver Tower as you intercept the ILS localizer.",
+      options: [
+        { text: "118.3, 4-5-6-Bravo-Lima, good day.", correct: true },
+        { text: "Roger, switching, good day.", correct: false },
+        { text: "Wilco, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "Contacting tower, 4-5-6-Bravo-Lima.", correct: false },
+      ],
+      explanation: "Frequency changes must include the specific frequency. 'Switching' doesn't confirm you received the right number. Always read back the frequency so ATC knows you didn't mishear it.",
+    },
+    {
+      id: "g05",
+      atcMessage: "Piper 4-5-6-Bravo-Lima, unable ILS 35L due traffic, expect RNAV runway 35R approach, advise if able.",
+      situation: "Denver Approach has changed your approach due to a traffic conflict. Your aircraft is RNAV-capable.",
+      options: [
+        { text: "Unable — we need the ILS for minimums, 4-5-6-Bravo-Lima.", correct: false },
+        { text: "RNAV 35R is acceptable, 4-5-6-Bravo-Lima.", correct: true },
+        { text: "Roger, wilco.", correct: false },
+        { text: "Negative, request ILS 35L.", correct: false },
+      ],
+      explanation: "ATC asked you to 'advise if able' — they need your crew's decision. If you ARE able to fly the RNAV, confirm it clearly. 'Roger, Wilco' doesn't give ATC the yes/no answer they need. If you truly couldn't accept it, you'd state your reason.",
+    },
+    {
+      id: "g06",
+      atcMessage: "Bonanza 8-8-2-Whiskey-Alpha, Albuquerque Center, altimeter 29.82.",
+      situation: "You're cruising at 10,500 feet IFR on a flight from Phoenix to Albuquerque and Center has just issued an altimeter update.",
+      options: [
+        { text: "29.82, Bonanza 8-8-2-Whiskey-Alpha.", correct: true },
+        { text: "Roger, 8-8-2-Whiskey-Alpha.", correct: false },
+        { text: "Altimeter set, 8-8-2-Whiskey-Alpha.", correct: false },
+        { text: "Wilco, 8-8-2-Whiskey-Alpha.", correct: false },
+      ],
+      explanation: "Altimeter settings should be read back by repeating the specific setting. This is particularly critical in mountainous terrain — an incorrect altimeter setting can cause a serious altitude error. 'Altimeter set' doesn't confirm you received the right number.",
+    },
+    {
+      id: "g07",
+      atcMessage: "Mooney 5-5-Kilo-Tango-Romeo, Seattle Center, traffic 9 o'clock, 10 miles, northbound, Boeing 737 at flight level 230.",
+      situation: "You're flying VFR flight following at 12,500 feet over the Cascades. The called traffic is well above you and you can see it.",
+      options: [
+        { text: "Looking for traffic, Mooney 5-5-Kilo-Tango-Romeo.", correct: false },
+        { text: "Traffic in sight, Mooney 5-5-Kilo-Tango-Romeo.", correct: true },
+        { text: "Roger, Mooney 5-5-Kilo-Tango-Romeo.", correct: false },
+        { text: "No conflict, Mooney 5-5-Kilo-Tango-Romeo.", correct: false },
+      ],
+      explanation: "The 737 is at FL230, well above your 12,500. If you can visually identify it, 'Traffic in sight' is correct. 'No conflict' is non-standard phraseology and doesn't tell ATC whether you actually see the traffic. 'Looking for traffic' is only used when you cannot yet see it.",
+    },
+    {
+      id: "g08",
+      atcMessage: "Cirrus 2-2-Juliet-Sierra-Quebec, Portland Approach, maintain 2,800 until established on the localizer, cleared ILS runway 28R approach.",
+      situation: "You're flying the ILS approach into Portland International (KPDX) on a rainy Pacific Northwest afternoon.",
+      options: [
+        { text: "Maintain 2,800 until established on the localizer, cleared ILS 28R, 2-2-Juliet-Sierra-Quebec.", correct: true },
+        { text: "Roger, 2,800, 2-2-Juliet-Sierra-Quebec.", correct: false },
+        { text: "Cleared ILS 28R, 2-2-Juliet-Sierra-Quebec.", correct: false },
+        { text: "Copy, 2-2-Juliet-Sierra-Quebec.", correct: false },
+      ],
+      explanation: "The phrase 'maintain [altitude] until established' is safety-critical — it means you cannot descend on the glideslope until you're established on the localizer. The restriction AND the approach clearance must both be in your readback.",
+    },
+    {
+      id: "g09",
+      atcMessage: "Cirrus 2-2-Juliet-Sierra-Quebec, missed approach, fly runway heading, climb and maintain 3,000, contact Approach 124.35.",
+      situation: "You've gone missed at Portland due to a late configuration issue. ATC is issuing missed approach instructions.",
+      options: [
+        { text: "Runway heading, climb and maintain 3,000, Approach 124.35, 2-2-Juliet-Sierra-Quebec.", correct: true },
+        { text: "Roger, missed approach, 2-2-Juliet-Sierra-Quebec.", correct: false },
+        { text: "Climbing to 3,000, contacting approach, 2-2-Juliet-Sierra-Quebec.", correct: false },
+        { text: "Wilco, 2-2-Juliet-Sierra-Quebec.", correct: false },
+      ],
+      explanation: "Missed approach instructions contain multiple elements — all must be read back: the routing/heading, the altitude, and the frequency. In a high-workload go-around, this readback protects against any misheard element.",
+    },
+    {
+      id: "g10",
+      atcMessage: "Lancair 4-4-Hotel-Papa-Foxtrot, Kansas City Center, radar contact lost due to terrain. Report passing 10,000.",
+      situation: "You're descending IFR through the Rockies and terrain is blocking radar coverage.",
+      options: [
+        { text: "Will report passing 10,000, 4-4-Hotel-Papa-Foxtrot.", correct: true },
+        { text: "Roger, 4-4-Hotel-Papa-Foxtrot.", correct: false },
+        { text: "Wilco, lost radar, 4-4-Hotel-Papa-Foxtrot.", correct: false },
+        { text: "10,000, 4-4-Hotel-Papa-Foxtrot.", correct: false },
+      ],
+      explanation: "When ATC loses radar and asks you to report a position or altitude, read back that specific report request. 'Roger' alone doesn't commit you to making the report. Option D just states the altitude without the action of reporting it.",
+    },
+    {
+      id: "g11",
+      atcMessage: "Beechcraft 7-7-Mike-Alpha-Golf, Minneapolis Departure, turn right heading 090, climb and maintain 5,000, departure frequency 124.2 when leaving 3,000.",
+      situation: "You've just departed Minneapolis–Saint Paul International (KMSP) IFR, northbound for Duluth.",
+      options: [
+        { text: "Right heading 090, climb and maintain 5,000, departure 124.2 leaving 3,000, 7-7-Mike-Alpha-Golf.", correct: true },
+        { text: "Right 090, 5,000, 7-7-Mike-Alpha-Golf.", correct: false },
+        { text: "Roger, 7-7-Mike-Alpha-Golf.", correct: false },
+        { text: "Heading 090, climbing 5,000, switching 124.2, 7-7-Mike-Alpha-Golf.", correct: false },
+      ],
+      explanation: "Complex departure instructions with multiple elements — heading, altitude, AND a conditional frequency change — all require a full readback. Option D omits 'when leaving 3,000,' which is a conditional trigger. Option B misses the frequency handoff entirely.",
+    },
+    {
+      id: "g12",
+      atcMessage: "Diamond DA40, 3-3-Papa-Kilo-Whiskey, Atlanta Approach, you're entering the Class B, ident.",
+      situation: "You're VFR transitioning through Atlanta's busy Class B airspace on flight following.",
+      options: [
+        { text: "Ident, 3-3-Papa-Kilo-Whiskey.", correct: true },
+        { text: "Squawking ident, 3-3-Papa-Kilo-Whiskey.", correct: false },
+        { text: "Roger, 3-3-Papa-Kilo-Whiskey.", correct: false },
+        { text: "We're on 4321, 3-3-Papa-Kilo-Whiskey.", correct: false },
+      ],
+      explanation: "'Ident' is ATC's request for you to push the IDENT button on your transponder, and you acknowledge by pressing it and saying 'Ident.' 'Squawking ident' is slightly less precise — you want to confirm the action. 'Roger' alone doesn't confirm you pushed the button.",
+    },
+    {
+      id: "g13",
+      atcMessage: "Piper Meridian 6-6-Zulu-Kilo-Lima, Fort Worth Center, say souls on board and fuel remaining.",
+      situation: "You've declared an emergency due to a pressurization failure at FL250 over West Texas.",
+      options: [
+        { text: "Souls on board 2, fuel 3 hours, 6-6-Zulu-Kilo-Lima.", correct: true },
+        { text: "Roger, 6-6-Zulu-Kilo-Lima.", correct: false },
+        { text: "We have fuel, 6-6-Zulu-Kilo-Lima.", correct: false },
+        { text: "2 on board, 6-6-Zulu-Kilo-Lima.", correct: false },
+      ],
+      explanation: "In an emergency, ATC asks for souls on board AND fuel remaining — both are critical for rescue coordination. You must provide both. Option D only gives souls on board. 'We have fuel' (C) is useless without a quantity.",
+    },
+    {
+      id: "g14",
+      atcMessage: "Piper Seneca 5-5-Alpha-Bravo-Charlie, Miami Approach, expect radar vectors for the RNAV 12 approach to Opa-Locka. Descend via the STAR, maintain 4,000.",
+      situation: "You're arriving at Opa-Locka Executive Airport (KOPF) IFR from the Bahamas.",
+      options: [
+        { text: "Descend via the STAR, maintain 4,000, 5-5-Alpha-Bravo-Charlie.", correct: true },
+        { text: "Descend to 4,000, 5-5-Alpha-Bravo-Charlie.", correct: false },
+        { text: "Roger, 5-5-Alpha-Bravo-Charlie.", correct: false },
+        { text: "RNAV 12, maintain 4,000, 5-5-Alpha-Bravo-Charlie.", correct: false },
+      ],
+      explanation: "'Descend via the STAR' means follow all published altitude restrictions. Simplifying it to 'descend to 4,000' misses the STAR restriction component and could cause altitude violations at intermediate fixes.",
+    },
+    {
+      id: "g15",
+      atcMessage: "Cessna TTx 8-8-Romeo-Golf-November, Phoenix Approach, traffic alert, 2 o'clock, 1 mile, same altitude, unknown aircraft, turn right immediately.",
+      situation: "You're on an IFR arrival into Phoenix (KPHX) and ATC has just issued an urgent traffic alert.",
+      options: [
+        { text: "Turning right, 8-8-Romeo-Golf-November.", correct: true },
+        { text: "Looking for traffic, 8-8-Romeo-Golf-November.", correct: false },
+        { text: "Roger, 8-8-Romeo-Golf-November.", correct: false },
+        { text: "Unable, we're on an instrument approach.", correct: false },
+      ],
+      explanation: "When ATC says 'turn immediately,' execute the turn first, then transmit. A short readback like 'Turning right' confirms compliance. 'Looking for traffic' is dangerously passive when ATC has already determined you need to maneuver for separation.",
+    },
+  ],
+
+  // ══════════════════════════════════════════════════
+  //  COMMERCIAL / ATP  (15 unique scenarios)
+  // ══════════════════════════════════════════════════
+  commercial: [
+    {
+      id: "c01",
+      atcMessage: "United 582, New York Center, descend pilot's discretion to flight level 240, crossing restriction: cross MERIT at flight level 280 or above.",
+      situation: "You're captain of a Boeing 737 cruising at FL360 inbound to JFK from Los Angeles.",
+      options: [
+        { text: "Pilot's discretion to FL240, cross MERIT at FL280 or above, United 582.", correct: true },
+        { text: "Down to FL240, cross MERIT at 280, United 582.", correct: false },
+        { text: "Descending FL240, wilco on MERIT restriction, United 582.", correct: false },
+        { text: "Roger, pilot's discretion descent, United 582.", correct: false },
+      ],
+      explanation: "Pilot's discretion descents with crossing restrictions require a full readback of both elements. 'Pilot's discretion' means you choose when to begin; the MERIT restriction is mandatory regardless. All elements must appear in the readback.",
+    },
+    {
+      id: "c02",
+      atcMessage: "Southwest 1145, Denver Center, traffic 10 o'clock, 15 miles, opposite direction, climbing Boeing 777, flight level 340. Request your discretion on deviation.",
+      situation: "You're cruising at FL360 over Kansas and ATC has called traffic with a request for your crew's decision.",
+      options: [
+        { text: "We have TCAS contact, deviating right 20 degrees, Southwest 1145.", correct: true },
+        { text: "Roger, looking for traffic, Southwest 1145.", correct: false },
+        { text: "Wilco, deviating, Southwest 1145.", correct: false },
+        { text: "Southwest 1145, maintaining heading and altitude.", correct: false },
+      ],
+      explanation: "When ATC requests your discretion, they want your crew's decision. State your TCAS status and your specific intended action including direction of deviation. 'Deviating' without a direction doesn't give ATC enough information to maintain separation.",
+    },
+    {
+      id: "c03",
+      atcMessage: "Delta 440, Kennedy Approach, descend and maintain 3,000, reduce speed to 180 knots.",
+      situation: "You're on final vectors for JFK runway 31L during a busy afternoon arrival push.",
+      options: [
+        { text: "Descend and maintain 3,000, speed 180 knots, Delta 440.", correct: true },
+        { text: "3,000 and 180, Delta 440.", correct: false },
+        { text: "Slowing to 180, descending 3,000, Delta 440.", correct: false },
+        { text: "Roger, Delta 440.", correct: false },
+      ],
+      explanation: "Altitude and speed restrictions are both mandatory readback items. Standard phraseology for altitude is 'descend and maintain' and for speed is 'speed [knots].' Abbreviated readbacks like '3,000 and 180' lack the required standard phraseology.",
+    },
+    {
+      id: "c04",
+      atcMessage: "American 2231, Kennedy Tower, runway 31L, cleared to land, winds 310 at 14, RVR touchdown 5,000.",
+      situation: "Your Airbus A321 is on final approach into JFK in reduced visibility conditions.",
+      options: [
+        { text: "Cleared to land runway 31L, American 2231.", correct: true },
+        { text: "Cleared to land, American 2231.", correct: false },
+        { text: "Roger, 31L, American 2231.", correct: false },
+        { text: "Cleared to land 31L, RVR copied, American 2231.", correct: false },
+      ],
+      explanation: "Landing clearances require 'cleared to land' plus the runway. You do NOT need to read back wind or RVR — those are advisory information. The runway and the clearance phrase itself are the mandatory elements.",
+    },
+    {
+      id: "c05",
+      atcMessage: "JetBlue 714, exit runway at Foxtrot, contact Ground 121.9.",
+      situation: "You've just landed at JFK and are rolling out on the runway in low-visibility conditions.",
+      options: [
+        { text: "Exiting at Foxtrot, Ground 121.9, JetBlue 714.", correct: true },
+        { text: "Roger, exiting, JetBlue 714.", correct: false },
+        { text: "121.9, JetBlue 714.", correct: false },
+        { text: "Wilco, JetBlue 714.", correct: false },
+      ],
+      explanation: "After landing, acknowledge both the exit taxiway AND the ground frequency. In low visibility, exiting at the wrong taxiway or contacting the wrong frequency are common contributors to runway incursions.",
+    },
+    {
+      id: "c06",
+      atcMessage: "FedEx 981, Chicago Center, expect departure clearance time 1742Z, EDCT due to Memphis ground delay program. Current delay is 22 minutes.",
+      situation: "Your B767 cargo flight is holding at the gate at O'Hare waiting for a departure window.",
+      options: [
+        { text: "Expect clearance time 1742Z, FedEx 981.", correct: true },
+        { text: "Roger, 1742Z, FedEx 981.", correct: false },
+        { text: "Wilco, we'll hold, FedEx 981.", correct: false },
+        { text: "Pushing at 1742Z, FedEx 981.", correct: false },
+      ],
+      explanation: "EDCT readbacks require you to confirm the specific clearance time. 'Pushing at 1742Z' is incorrect — the EDCT is your wheels-up window, not your push time. Read back the exact clearance time using the required phrase 'expect clearance time [time].'",
+    },
+    {
+      id: "c07",
+      atcMessage: "United 456, San Francisco Departure, radar contact, fly the Mission Bay departure, climb and maintain 10,000.",
+      situation: "Your 737 has just lifted off from San Francisco International (KSFO) on a departure to Chicago.",
+      options: [
+        { text: "Mission Bay departure, climb and maintain 10,000, United 456.", correct: true },
+        { text: "Climbing to 10,000, United 456.", correct: false },
+        { text: "Roger, United 456.", correct: false },
+        { text: "Mission Bay, 10,000, United 456.", correct: false },
+      ],
+      explanation: "SID assignments and altitude clearances both require readback with standard phraseology. 'Mission Bay, 10,000' (D) is incomplete — omitting 'departure' and 'climb and maintain' drops important standard terms. Option B omits the SID name entirely.",
+    },
+    {
+      id: "c08",
+      atcMessage: "Alaska 889, Seattle Center, cleared direct BUWZO, then as filed. Maintain flight level 370.",
+      situation: "ATC is giving your B737-900 a direct routing shortcut over Oregon.",
+      options: [
+        { text: "Direct BUWZO then as filed, maintain FL370, Alaska 889.", correct: true },
+        { text: "Direct BUWZO, Alaska 889.", correct: false },
+        { text: "Roger, direct BUWZO, Alaska 889.", correct: false },
+        { text: "FL370, as filed, Alaska 889.", correct: false },
+      ],
+      explanation: "Route clearances require you to read back the fix, the continuation of the filed route, AND the altitude. Omitting 'then as filed' could create confusion about whether you're off-route after BUWZO. All three elements must be in the readback.",
+    },
+    {
+      id: "c09",
+      atcMessage: "Spirit 2200, Miami Approach, fly heading 330, intercept the localizer, maintain 2,500 until established, cleared ILS runway 28L approach.",
+      situation: "You're in the A320 cockpit on a clear afternoon arrival into Miami International (KMIA).",
+      options: [
+        { text: "Heading 330, intercept localizer, maintain 2,500 until established, cleared ILS 28L, Spirit 2200.", correct: true },
+        { text: "Cleared ILS 28L, Spirit 2200.", correct: false },
+        { text: "Heading 330, cleared ILS 28L, Spirit 2200.", correct: false },
+        { text: "Roger, Spirit 2200.", correct: false },
+      ],
+      explanation: "This clearance has multiple elements: heading, localizer intercept, altitude restriction, and approach clearance. Every element must be read back. Omitting 'until established' (option C) misses the altitude restriction that governs when you can descend on the glideslope.",
+    },
+    {
+      id: "c10",
+      atcMessage: "Southwest 3311, Dallas Departure, on completion of runway heading, turn right, fly the COWBY6 departure, climb and maintain 12,000.",
+      situation: "You've just departed Dallas Love Field (KDAL) and departure is issuing your departure routing.",
+      options: [
+        { text: "On runway heading then right, COWBY6 departure, climb and maintain 12,000, Southwest 3311.", correct: true },
+        { text: "COWBY6, climb 12,000, Southwest 3311.", correct: false },
+        { text: "Roger, turning right for COWBY6, Southwest 3311.", correct: false },
+        { text: "Right turn, 12,000, Southwest 3311.", correct: false },
+      ],
+      explanation: "The instruction has a conditional element: 'on completion of runway heading, THEN turn right.' Missing this conditionality could cause you to turn right early. All three elements — timing of turn, SID name, and altitude — must be in the readback.",
+    },
+    {
+      id: "c11",
+      atcMessage: "Frontier 77, Denver Tower, line up and wait runway 35L, traffic on 3 mile final.",
+      situation: "Your A320 is number two for departure at Denver International. The first aircraft is still on final.",
+      options: [
+        { text: "Line up and wait runway 35L, Frontier 77.", correct: true },
+        { text: "Roger, Frontier 77.", correct: false },
+        { text: "Entering runway 35L, Frontier 77.", correct: false },
+        { text: "Holding short 35L, Frontier 77.", correct: false },
+      ],
+      explanation: "'Line up and wait' is a mandatory readback item and you must include the runway. Option D is dangerously wrong — 'holding short' means staying behind the hold short line, which is the opposite of what ATC instructed you to do.",
+    },
+    {
+      id: "c12",
+      atcMessage: "Hawaiian 25, Honolulu Center, report passing CELPO and estimating WOBEE.",
+      situation: "Your B767 is outbound over the Pacific Ocean, well beyond radar coverage, on a long oceanic position reporting requirement.",
+      options: [
+        { text: "Will report CELPO and estimating WOBEE, Hawaiian 25.", correct: true },
+        { text: "Roger, Hawaiian 25.", correct: false },
+        { text: "Wilco, Hawaiian 25.", correct: false },
+        { text: "CELPO and WOBEE, Hawaiian 25.", correct: false },
+      ],
+      explanation: "Over oceanic airspace without radar, position reports are mandatory safety elements. Read back the specific points you'll report. 'Wilco' doesn't confirm you heard the specific fix names correctly. Option D lacks the action words 'will report' and 'estimating.'",
+    },
+    {
+      id: "c13",
+      atcMessage: "UPS 1182, Cincinnati Approach, cleared for the RNAV Z runway 18C approach, circle to land runway 36L, circle south of the field.",
+      situation: "Your B757 is arriving at Cincinnati/Northern Kentucky International on a night cargo operation with north winds favoring runway 36.",
+      options: [
+        { text: "Cleared RNAV Z 18C, circle to runway 36L, circle south, UPS 1182.", correct: true },
+        { text: "Cleared RNAV Z 18C, UPS 1182.", correct: false },
+        { text: "Circle to land 36L, UPS 1182.", correct: false },
+        { text: "Roger, cleared approach, UPS 1182.", correct: false },
+      ],
+      explanation: "Circling approaches have three distinct components: the approach to fly, the runway to land on, and the circling restriction. All three must be in the readback. Missing 'circle south' could lead the crew north of the field, creating terrain or traffic conflicts.",
+    },
+    {
+      id: "c14",
+      atcMessage: "Allegiant 905, Los Angeles Center, descend to flight level 280, speed your discretion.",
+      situation: "Your A319 is on a transcon arriving into Las Vegas (KLAS) and ATC is beginning your descent.",
+      options: [
+        { text: "Descend to FL280, Allegiant 905.", correct: true },
+        { text: "Descend FL280, speed discretion, Allegiant 905.", correct: false },
+        { text: "Roger, Allegiant 905.", correct: false },
+        { text: "Down to 280, Allegiant 905.", correct: false },
+      ],
+      explanation: "'Speed your discretion' is ATC releasing speed restrictions — it doesn't require a readback. The altitude instruction 'descend to FL280' is the mandatory readback item. 'Down to 280' (D) is informal and non-standard. Option B unnecessarily reads back 'speed discretion.'",
+    },
+    {
+      id: "c15",
+      atcMessage: "Envoy 4432, Chicago O'Hare Tower, line up and wait runway 10L, traffic departing runway 10C.",
+      situation: "Your ERJ-145 is ready for departure at O'Hare in heavy traffic. ATC is sequencing you behind a departure on the parallel runway.",
+      options: [
+        { text: "Line up and wait runway 10L, Envoy 4432.", correct: true },
+        { text: "Roger, 10L, Envoy 4432.", correct: false },
+        { text: "Cleared for takeoff 10L, Envoy 4432.", correct: false },
+        { text: "Holding short 10L, Envoy 4432.", correct: false },
+      ],
+      explanation: "'Line up and wait' is the U.S. standard phraseology and is a mandatory readback item with the runway. Option C is critically dangerous — you have NOT been cleared for takeoff and must never transmit that. Option D contradicts the instruction entirely.",
+    },
+  ],
+};
+
+const levelInfo = {
+  student:    { label: "Student Pilot",    icon: "✈",  color: "#38bdf8", desc: "VFR radio, taxi, pattern ops, Class C/D entry" },
+  general:    { label: "General Aviation", icon: "🛩",  color: "#a78bfa", desc: "IFR approaches, flight following, complex clearances" },
+  commercial: { label: "Commercial / ATP", icon: "🛫", color: "#fb923c", desc: "Airline ops, STARs, SIDs, oceanic, high-density airspace" },
+};
+
+const QUESTIONS_PER_SESSION = 10;
+
+export default function ATCSimulator() {
+  const [screen, setScreen]                   = useState("menu");
+  const [level, setLevel]                     = useState(null);
+  const [questions, setQuestions]             = useState([]);
+  const [currentIdx, setCurrentIdx]           = useState(0);
+  const [selected, setSelected]               = useState(null);
+  const [streak, setStreak]                   = useState(0);
+  const [bestStreak, setBestStreak]           = useState(0);
+  const [score, setScore]                     = useState(0);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [radioStatic, setRadioStatic]         = useState(false);
+  const audioCtx = useRef(null);
+
+  const playStatic = () => {
+    try {
+      if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx.current;
+      const bufferSize = Math.floor(ctx.sampleRate * 0.22);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.22;
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const f = ctx.createBiquadFilter();
+      f.type = "bandpass"; f.frequency.value = 1900; f.Q.value = 0.5;
+      src.connect(f); f.connect(ctx.destination);
+      src.start(); src.stop(ctx.currentTime + 0.22);
+    } catch (_) {}
+  };
+
+  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+  const startLevel = (lvl) => {
+    setLevel(lvl);
+    const pool = shuffle(scenarios[lvl]).slice(0, QUESTIONS_PER_SESSION);
+    const processed = pool.map(q => ({ ...q, options: shuffle(q.options) }));
+    setQuestions(processed);
+    setCurrentIdx(0); setSelected(null);
+    setShowExplanation(false); setStreak(0); setScore(0);
+    setScreen("sim");
+    setRadioStatic(true); playStatic();
+    setTimeout(() => setRadioStatic(false), 320);
+  };
+
+  const handleSelect = (i) => {
+    if (selected !== null) return;
+    setSelected(i);
+    const isCorrect = questions[currentIdx].options[i].correct;
+    if (isCorrect) {
+      const ns = streak + 1;
+      setStreak(ns); setBestStreak(p => Math.max(p, ns)); setScore(s => s + 1);
+    } else { setStreak(0); }
+    setShowExplanation(true);
+  };
+
+  const next = () => {
+    if (currentIdx + 1 >= questions.length) { setScreen("result"); return; }
+    setCurrentIdx(i => i + 1); setSelected(null); setShowExplanation(false);
+    setRadioStatic(true); playStatic();
+    setTimeout(() => setRadioStatic(false), 320);
+  };
+
+  const q    = questions[currentIdx];
+  const info = level ? levelInfo[level] : null;
+  const pct  = (score / (questions.length || 1)) * 100;
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#070b12", fontFamily:"'Courier New','Lucida Console',monospace", color:"#e2e8f0", position:"relative", overflow:"hidden" }}>
+
+      <div style={{ position:"fixed", inset:0, opacity:0.032, pointerEvents:"none",
+        backgroundImage:"radial-gradient(circle at 50% 50%, #00ff88 0%, transparent 65%), repeating-linear-gradient(0deg,transparent,transparent 39px,#00ff88 40px), repeating-linear-gradient(90deg,transparent,transparent 39px,#00ff88 40px)" }} />
+      <div style={{ position:"fixed", top:"50%", left:"50%", width:"200vw", height:"200vh", marginLeft:"-100vw", marginTop:"-100vh",
+        background:"conic-gradient(from 0deg,transparent 345deg,rgba(0,255,136,0.022) 360deg)",
+        animation:"radarSweep 7s linear infinite", pointerEvents:"none" }} />
+
+      <style>{`
+        @keyframes radarSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes fadeSlide{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.32}}
+        @keyframes popIn{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
+        .opt{display:block;width:100%;background:rgba(255,255,255,0.024);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:14px 17px;cursor:pointer;text-align:left;color:#c0cfe0;font-family:'Courier New',monospace;font-size:13.5px;line-height:1.55;transition:all 0.13s;margin-bottom:9px;}
+        .opt:hover:not(:disabled){background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.22);}
+        .opt:disabled{cursor:default;}
+        .primary{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.36);color:#00ff88;padding:11px 27px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:12.5px;letter-spacing:1px;text-transform:uppercase;transition:all 0.17s;}
+        .primary:hover{background:rgba(0,255,136,0.17);border-color:#00ff88;}
+        .ghost{background:none;border:1px solid #1a2436;border-radius:6px;color:#3d5068;padding:11px 21px;cursor:pointer;font-family:'Courier New',monospace;font-size:12px;text-transform:uppercase;letter-spacing:1px;transition:all 0.14s;}
+        .ghost:hover{border-color:#2d3f57;color:#576e87;}
+      `}</style>
+
+      {/* ═══ MENU ═══ */}
+      {screen === "menu" && (
+        <div style={{ maxWidth:680, margin:"0 auto", padding:"54px 22px", animation:"fadeSlide 0.44s ease" }}>
+          <div style={{ textAlign:"center", marginBottom:50 }}>
+            <div style={{ fontSize:10, letterSpacing:5, color:"#00ff88", marginBottom:10, opacity:0.7 }}>◈ AERONAUTICAL TRAINING SYSTEM ◈</div>
+            <h1 style={{ fontSize:"clamp(30px,5.5vw,50px)", fontWeight:900, margin:0, letterSpacing:2.5, color:"#f0f6ff" }}>ATC COMM</h1>
+            <div style={{ fontSize:10, letterSpacing:7, color:"#253345", marginTop:5 }}>SIMULATOR</div>
+            <p style={{ color:"#3d5068", fontSize:13.5, marginTop:18, lineHeight:1.65, maxWidth:460, margin:"18px auto 0" }}>
+              Master radio communications with air traffic control.<br/>
+              {QUESTIONS_PER_SESSION} questions per session from a bank of <strong style={{color:"#4a7090"}}>{Object.values(scenarios).flat().length}</strong> unique scenarios.
+            </p>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:13 }}>
+            {Object.entries(levelInfo).map(([key, val]) => (
+              <button key={key} onClick={() => startLevel(key)} style={{
+                background:"rgba(255,255,255,0.017)", border:`1px solid ${val.color}28`,
+                borderLeft:`3px solid ${val.color}`, borderRadius:9, padding:"19px 22px",
+                cursor:"pointer", display:"flex", alignItems:"center", gap:17, textAlign:"left",
+                transition:"all 0.17s", color:"#e2e8f0", fontFamily:"'Courier New',monospace",
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.background=`${val.color}0c`;e.currentTarget.style.borderLeftColor=val.color;e.currentTarget.style.borderTopColor=`${val.color}55`;e.currentTarget.style.borderRightColor=`${val.color}55`;e.currentTarget.style.borderBottomColor=`${val.color}55`;}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.017)";e.currentTarget.style.borderLeftColor=val.color;e.currentTarget.style.borderTopColor=`${val.color}28`;e.currentTarget.style.borderRightColor=`${val.color}28`;e.currentTarget.style.borderBottomColor=`${val.color}28`;}}>
+                <span style={{ fontSize:25 }}>{val.icon}</span>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:700, letterSpacing:1.2, color:val.color }}>{val.label.toUpperCase()}</div>
+                  <div style={{ fontSize:11.5, color:"#344a5e", marginTop:3 }}>{val.desc}</div>
+                </div>
+                <span style={{ marginLeft:"auto", color:`${val.color}55`, fontSize:19 }}>›</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ textAlign:"center", marginTop:44, fontSize:10, color:"#0d1724", letterSpacing:4 }}>PHRASEOLOGY · FAA AIM & ORDER 7110.65</div>
+        </div>
+      )}
+
+      {/* ═══ SIM ═══ */}
+      {screen === "sim" && q && (
+        <div style={{ maxWidth:760, margin:"0 auto", padding:"28px 20px 64px", animation:"fadeSlide 0.35s ease" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:26 }}>
+            <button className="ghost" onClick={() => setScreen("menu")} style={{ padding:"6px 13px", fontSize:10 }}>← MENU</button>
+            <div style={{ display:"flex", gap:26 }}>
+              {[
+                { label:"STREAK", val: streak>0?`🔥 ${streak}`:`${streak}`, col: streak>0?"#00ff88":"#ef4444" },
+                { label:"SCORE",  val: `${score}/${currentIdx+(selected!==null?1:0)}`, col:"#f0f6ff" },
+                { label:"BEST",   val: bestStreak, col: info.color },
+              ].map(({label,val,col}) => (
+                <div key={label} style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:7.5, letterSpacing:2.5, color:"#182230", marginBottom:2 }}>{label}</div>
+                  <div style={{ fontSize:21, fontWeight:900, color:col, lineHeight:1.1 }}>{val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <div style={{ fontSize:9, letterSpacing:3, color:info.color }}>{info.icon} {info.label.toUpperCase()}</div>
+            <div style={{ fontSize:9, letterSpacing:2, color:"#182230" }}>Q {currentIdx+1} / {questions.length}</div>
+          </div>
+          <div style={{ height:2, background:"#0b1220", borderRadius:2, marginBottom:22, overflow:"hidden" }}>
+            <div style={{ height:"100%", borderRadius:2, background:info.color, transition:"width 0.4s ease",
+              width:`${((currentIdx+(selected!==null?1:0))/questions.length)*100}%` }} />
+          </div>
+
+          <div style={{ background:"rgba(255,255,255,0.015)", border:"1px solid #111c2a", borderRadius:8, padding:"12px 16px", marginBottom:16, fontSize:12.5, color:"#364e66", lineHeight:1.62 }}>
+            <span style={{ color:"#1a2d3f", letterSpacing:2.5, fontSize:9 }}>SITUATION // </span>{q.situation}
+          </div>
+
+          <div style={{ background:"rgba(0,255,136,0.028)", border:"1px solid rgba(0,255,136,0.13)", borderRadius:10, padding:"18px 20px", marginBottom:24 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+              <div style={{ width:7, height:7, borderRadius:"50%", background:"#00ff88", animation:radioStatic?"none":"pulse 2s ease infinite", opacity:radioStatic?0.35:1 }} />
+              <span style={{ fontSize:8.5, letterSpacing:3.5, color:"#00ff88" }}>ATC TRANSMISSION</span>
+            </div>
+            <p style={{ margin:0, fontSize:14.5, lineHeight:1.78, color:"#d8e4f0", fontStyle:"italic", letterSpacing:0.3 }}>"{q.atcMessage}"</p>
+          </div>
+
+          <div style={{ fontSize:8.5, letterSpacing:3, color:"#182230", marginBottom:11 }}>YOUR RESPONSE — SELECT ONE:</div>
+          {q.options.map((opt, i) => {
+            let bdr="rgba(255,255,255,0.09)", bg="rgba(255,255,255,0.024)", col="#bccede";
+            if (selected!==null) {
+              if (opt.correct)         { bdr="#00ff88"; bg="rgba(0,255,136,0.065)"; col="#00ff88"; }
+              else if (i===selected)   { bdr="#ef4444"; bg="rgba(239,68,68,0.065)"; col="#ef4444"; }
+              else                     { col="#1e2e3e"; }
+            }
+            return (
+              <button key={i} className="opt" disabled={selected!==null} onClick={()=>handleSelect(i)} style={{borderColor:bdr,background:bg,color:col}}>
+                <span style={{color:selected!==null?(opt.correct?"#00ff8844":"#1a2d3f"):"#1a2d3f",marginRight:10}}>{String.fromCharCode(65+i)}.</span>
+                {opt.text}
+                {selected!==null&&opt.correct&&<span style={{float:"right",fontSize:10.5,letterSpacing:1}}>✓ CORRECT</span>}
+                {selected!==null&&i===selected&&!opt.correct&&<span style={{float:"right",fontSize:10.5,letterSpacing:1}}>✗ INCORRECT</span>}
+              </button>
+            );
+          })}
+
+          {showExplanation && (
+            <div style={{ background:"rgba(255,255,255,0.014)", border:"1px solid #111c2a", borderRadius:8, padding:"14px 17px", marginTop:2, marginBottom:20, animation:"popIn 0.24s ease" }}>
+              <div style={{ fontSize:8, letterSpacing:3, color:"#182230", marginBottom:7 }}>INSTRUCTOR NOTE</div>
+              <p style={{ margin:0, fontSize:12.5, color:"#3f5e78", lineHeight:1.76 }}>{q.explanation}</p>
+            </div>
+          )}
+
+          {selected!==null && (
+            <div style={{ textAlign:"right", marginTop:4 }}>
+              <button className="primary" onClick={next}>
+                {currentIdx+1>=questions.length?"VIEW RESULTS":"NEXT TRANSMISSION →"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══ RESULTS ═══ */}
+      {screen === "result" && (
+        <div style={{ maxWidth:540, margin:"0 auto", padding:"66px 22px", textAlign:"center", animation:"fadeSlide 0.44s ease" }}>
+          <div style={{ fontSize:9, letterSpacing:5, color:"#182230", marginBottom:20 }}>SESSION COMPLETE</div>
+          <div style={{ fontSize:62, marginBottom:12 }}>
+            {pct>=90?"🏆":pct>=70?"📻":pct>=50?"📖":"🔁"}
+          </div>
+          <h2 style={{ fontSize:32, fontWeight:900, margin:"0 0 7px", color:"#f0f6ff" }}>{score} / {questions.length}</h2>
+          <p style={{ color:"#2d4155", fontSize:13, lineHeight:1.65 }}>
+            {pct>=90?"Outstanding. You're cleared for full operations.":
+             pct>=70?"Solid performance. Review the highlighted areas.":
+             pct>=50?"Keep studying. Focus on mandatory readback items.":
+             "Return to the AIM phraseology chapters and try again."}
+          </p>
+
+          <div style={{ display:"flex", justifyContent:"center", gap:40, margin:"34px 0", padding:"20px", background:"rgba(255,255,255,0.015)", border:"1px solid #111c2a", borderRadius:12 }}>
+            <div>
+              <div style={{ fontSize:8, letterSpacing:3, color:"#182230" }}>BEST STREAK</div>
+              <div style={{ fontSize:32, fontWeight:900, color:"#00ff88" }}>🔥 {bestStreak}</div>
+            </div>
+            <div>
+              <div style={{ fontSize:8, letterSpacing:3, color:"#182230" }}>ACCURACY</div>
+              <div style={{ fontSize:32, fontWeight:900, color:info.color }}>{Math.round(pct)}%</div>
+            </div>
+          </div>
+
+          <div style={{ display:"flex", gap:11, justifyContent:"center" }}>
+            <button className="primary" onClick={()=>startLevel(level)}>RETRY LEVEL</button>
+            <button className="ghost"   onClick={()=>setScreen("menu")}>CHANGE LEVEL</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

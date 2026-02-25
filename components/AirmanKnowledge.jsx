@@ -4,12 +4,13 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { parQuestions, figurePdfPages } from '@/data/parQuestions';
 import { buildSession, calculatePct, isPassing, getPerformanceBadge } from '@/lib/quiz';
+import LearnMode from './LearnMode';
 
 // Load PDF viewer client-side only
 const PdfFigure = dynamic(() => import('./PdfFigure'), { ssr: false });
 
 export default function AirmanKnowledge() {
-  const [screen, setScreen]     = useState('menu'); // menu | quiz | result
+  const [screen, setScreen]     = useState('menu'); // menu | quiz | result | learn
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selected, setSelected] = useState(null); // index of selected option
@@ -92,10 +93,17 @@ export default function AirmanKnowledge() {
               icon: '⚡',
               color: '#34d399',
             },
+            {
+              key: 'learn',
+              label: 'LEARN MODE — 61 QUESTIONS',
+              desc: 'Mastery-based: every question must be answered correctly 3× before it\'s done. Wrong answers recycle to the front.',
+              icon: '🧠',
+              color: '#a78bfa',
+            },
           ].map(opt => (
             <button
               key={opt.key}
-              onClick={() => startQuiz(opt.key)}
+              onClick={() => opt.key === 'learn' ? setScreen('learn') : startQuiz(opt.key)}
               style={{
                 background: 'rgba(255,255,255,0.017)',
                 border: `1px solid ${opt.color}28`,
@@ -415,6 +423,11 @@ export default function AirmanKnowledge() {
         </div>
       </div>
     );
+  }
+
+  // ─── LEARN MODE ────────────────────────────────────────────────────────────
+  if (screen === 'learn') {
+    return <LearnMode onBack={() => setScreen('menu')} />;
   }
 
   return null;

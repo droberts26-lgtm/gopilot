@@ -101,15 +101,14 @@ describe('buildSession', () => {
     });
   });
 
-  it('each question has shuffled options that still contain all original texts', () => {
+  it('each question retains options in their original A/B/C order', () => {
     const session = buildSession(bank, 3);
     session.forEach(q => {
-      const texts = q.options.map(o => o.text).sort();
-      expect(texts).toEqual(['Option A', 'Option B', 'Option C'].sort());
+      expect(q.options.map(o => o.letter)).toEqual(['A', 'B', 'C']);
     });
   });
 
-  it('preserves exactly one correct option after shuffling', () => {
+  it('preserves exactly one correct option per question', () => {
     const session = buildSession(bank, 10);
     session.forEach(q => {
       const correctCount = q.options.filter(o => o.correct).length;

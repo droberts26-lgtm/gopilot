@@ -13,7 +13,9 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@upstash/redis": "^1.36.3",
     "next": "14.2.3",
+    "next-auth": "^4.24.13",
     "react": "^18",
     "react-dom": "^18",
     "react-pdf": "^7.7.3"

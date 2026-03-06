@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { parQuestions, figurePdfPages } from '@/data/parQuestions';
 import {
@@ -11,6 +11,7 @@ import {
   isLearnSessionComplete,
   getLearnStats,
 } from '@/lib/learn';
+import { saveLearnSession, loadLearnSession, clearLearnSession } from '@/lib/storage';
 
 const PdfFigure = dynamic(() => import('./PdfFigure'), { ssr: false });
 
@@ -29,25 +30,63 @@ function formatElapsed(ms) {
  * MASTERY_THRESHOLD times before it's mastered. Wrong answers recycle
  * the question toward the front of the queue.
  *
+ * Progress is persisted to localStorage between sessions.
+ * Questions can be flagged for extra reinforcement.
+ *
  * @param {{ onBack: () => void }} props
  */
 export default function LearnMode({ onBack }) {
-  const [session, setSession] = useState(() => initLearnSession(parQuestions));
-  const [screen, setScreen] = useState('learn'); // 'learn' | 'complete'
-  const [selectedIdx, setSelectedIdx] = useState(null);
-  const [startTime] = useState(Date.now());
-  const [totalAnswered, setTotalAnswered] = useState(0);
-  const [totalCorrect, setTotalCorrect] = useState(0);
+  // ── Initialise from localStorage if a valid saved session exists ─────────
+  const [initState] = useState(() => {
+    const saved = loadLearnSession(parQuestions.length);
+    return {
+      screen:        saved ? 'resume' : 'learn',
+      session:       saved ? saved.session : initLearnSession(parQuestions),
+      totalAnswered: saved ? (saved.meta.totalAnswered ?? 0) : 0,
+      totalCorrect:  saved ? (saved.meta.totalCorrect  ?? 0) : 0,
+      startTime:     saved ? (saved.meta.startTime     ?? Date.now()) : Date.now(),
+      flaggedIds:    saved ? new Set(saved.meta.flaggedIds ?? []) : new Set(),
+    };
+  });
 
-  // ── Derived values ──────────────────────────────────────────────────────────
-  const currentId = getCurrentQuestionId(session);
-  const currentQ = parQuestions.find(q => q.id === currentId);
-  const stats = getLearnStats(session);
+  const [screen,        setScreen]        = useState(initState.screen);
+  const [session,       setSession]       = useState(initState.session);
+  const [selectedIdx,   setSelectedIdx]   = useState(null);
+  const [totalAnswered, setTotalAnswered] = useState(initState.totalAnswered);
+  const [totalCorrect,  setTotalCorrect]  = useState(initState.totalCorrect);
+  const [startTime]                       = useState(initState.startTime);
+  const [flaggedIds,    setFlaggedIds]    = useState(initState.flaggedIds);
+
+  // ── Derived values ──────────────────────────────────────────────────────
+  const currentId    = getCurrentQuestionId(session);
+  const currentQ     = parQuestions.find(q => q.id === currentId);
+  const stats        = getLearnStats(session);
   const currentEntry = currentId != null ? session.masteryMap[currentId] : null;
+  const isAnswered   = selectedIdx !== null;
+  const wasCorrect   = isAnswered && currentQ?.options[selectedIdx].correct;
+  const isFlagged    = currentId != null && flaggedIds.has(currentId);
 
   const getFigurePages = (figNums) => figNums.map(n => figurePdfPages[n]).filter(Boolean);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (screen !== 'learn') return;
+    const onKey = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (!isAnswered) {
+        if (e.key === 'a' || e.key === 'A') handleSelect(0);
+        else if (e.key === 'b' || e.key === 'B') handleSelect(1);
+        else if (e.key === 'c' || e.key === 'C') handleSelect(2);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleContinue();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  // ── Handlers ────────────────────────────────────────────────────────────
   const handleSelect = (optionIdx) => {
     if (selectedIdx !== null) return;
     setSelectedIdx(optionIdx);
@@ -59,23 +98,134 @@ export default function LearnMode({ onBack }) {
   const handleContinue = () => {
     if (selectedIdx === null || !currentQ) return;
     const isCorrect = currentQ.options[selectedIdx].correct;
-    const nextSession = processAnswer(session, currentId, isCorrect);
+    let nextSession = processAnswer(session, currentId, isCorrect);
+
+    const nowMastered = nextSession.masteryMap[currentId].mastered;
+
+    // Flagged + correct + not yet mastered → move to position 1 for faster return
+    if (flaggedIds.has(currentId) && isCorrect && !nowMastered) {
+      const idx = nextSession.queue.indexOf(currentId);
+      if (idx > 1) {
+        const q = [...nextSession.queue];
+        q.splice(idx, 1);
+        q.splice(1, 0, currentId);
+        nextSession = { ...nextSession, queue: q };
+      }
+    }
+
+    // Remove from flags once mastered
+    const newFlaggedIds = new Set(flaggedIds);
+    if (nowMastered) newFlaggedIds.delete(currentId);
+
     setSession(nextSession);
+    setFlaggedIds(newFlaggedIds);
     setSelectedIdx(null);
+
     if (isLearnSessionComplete(nextSession)) {
+      clearLearnSession();
       setScreen('complete');
+    } else {
+      // totalAnswered/totalCorrect already incremented by handleSelect
+      saveLearnSession(nextSession, {
+        totalAnswered,
+        totalCorrect,
+        startTime,
+        flaggedIds: [...newFlaggedIds],
+      });
     }
   };
 
+  const handleFlag = () => {
+    if (currentId == null) return;
+    setFlaggedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(currentId)) next.delete(currentId); else next.add(currentId);
+      return next;
+    });
+  };
+
   const handleRestart = () => {
+    clearLearnSession();
     setSession(initLearnSession(parQuestions));
     setSelectedIdx(null);
     setTotalAnswered(0);
     setTotalCorrect(0);
+    setFlaggedIds(new Set());
     setScreen('learn');
   };
 
-  // ── Complete screen ─────────────────────────────────────────────────────────
+  // ── Resume screen ───────────────────────────────────────────────────────
+  if (screen === 'resume') {
+    const resumeStats = getLearnStats(session);
+    return (
+      <div style={{
+        maxWidth: 520, margin: '0 auto', padding: '60px 22px',
+        textAlign: 'center', animation: 'fadeSlide 0.4s ease',
+      }}>
+        <div style={{ fontSize: 9, letterSpacing: 5, color: '#7a6a9a', marginBottom: 20 }}>
+          SESSION IN PROGRESS
+        </div>
+        <div style={{ fontSize: 44, marginBottom: 14 }}>🧠</div>
+
+        <div style={{
+          padding: '20px', background: 'rgba(167,139,250,0.05)',
+          border: '1px solid rgba(167,139,250,0.2)', borderRadius: 12, marginBottom: 28,
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            {[
+              { label: 'MASTERED',    val: resumeStats.mastered,  col: PURPLE },
+              { label: 'IN PROGRESS', val: resumeStats.learning,  col: '#f59e0b' },
+              { label: 'NOT SEEN',    val: resumeStats.notSeen,   col: '#6a8aa4' },
+            ].map(({ label, val, col }) => (
+              <div key={label}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: col }}>{val}</div>
+                <div style={{ fontSize: 8, letterSpacing: 2, color: '#6a5a8a', marginTop: 3 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setScreen('learn')}
+            style={{
+              background: `rgba(167,139,250,0.12)`, border: `1px solid rgba(167,139,250,0.4)`,
+              color: PURPLE, padding: '11px 28px', borderRadius: 7, cursor: 'pointer',
+              fontFamily: "'Courier New',monospace", fontSize: 13, fontWeight: 700,
+              letterSpacing: 1.5, textTransform: 'uppercase',
+            }}
+          >
+            ▶ RESUME SESSION
+          </button>
+          <button
+            onClick={handleRestart}
+            style={{
+              background: 'none', border: '1px solid #1a2436', borderRadius: 7,
+              color: '#6a8aa4', padding: '11px 22px', cursor: 'pointer',
+              fontFamily: "'Courier New',monospace", fontSize: 12, letterSpacing: 1,
+              textTransform: 'uppercase',
+            }}
+          >
+            START FRESH
+          </button>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: 'none', border: 'none', color: '#4a6a84', cursor: 'pointer',
+              fontFamily: "'Courier New',monospace", fontSize: 10, letterSpacing: 1,
+              textDecoration: 'underline',
+            }}
+          >
+            ← BACK TO MENU
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Complete screen ─────────────────────────────────────────────────────
   if (screen === 'complete') {
     const elapsed = Date.now() - startTime;
     const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
@@ -84,18 +234,15 @@ export default function LearnMode({ onBack }) {
         maxWidth: 600, margin: '0 auto', padding: '48px 22px',
         textAlign: 'center', animation: 'fadeSlide 0.4s ease',
       }}>
-        <div style={{ fontSize: 9, letterSpacing: 5, color: '#4c3d7a', marginBottom: 16 }}>
+        <div style={{ fontSize: 9, letterSpacing: 5, color: '#8a7aaa', marginBottom: 16 }}>
           LEARN MODE COMPLETE
         </div>
         <div style={{ fontSize: 56, marginBottom: 12 }}>🎓</div>
-        <h2 style={{
-          fontSize: 22, fontWeight: 900, letterSpacing: 3,
-          color: PURPLE, margin: '0 0 6px',
-        }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, letterSpacing: 3, color: PURPLE, margin: '0 0 6px' }}>
           ALL TOPICS MASTERED
         </h2>
-        <p style={{ color: '#4a3a6a', fontSize: 13, margin: '0 0 32px' }}>
-          You answered correctly {MASTERY_THRESHOLD}× on every one of the 61 questions.
+        <p style={{ color: '#8a7aaa', fontSize: 13, margin: '0 0 32px' }}>
+          You answered correctly {MASTERY_THRESHOLD}× on every one of the {parQuestions.length} questions.
         </p>
 
         <div style={{
@@ -104,13 +251,13 @@ export default function LearnMode({ onBack }) {
           border: '1px solid rgba(167,139,250,0.18)', borderRadius: 12,
         }}>
           {[
-            { label: 'TOTAL ANSWERED', val: totalAnswered, col: PURPLE },
-            { label: 'ACCURACY', val: `${accuracy}%`, col: '#34d399' },
-            { label: 'TIME', val: formatElapsed(elapsed), col: '#60a5fa' },
+            { label: 'TOTAL ANSWERED', val: totalAnswered,          col: PURPLE },
+            { label: 'ACCURACY',       val: `${accuracy}%`,         col: '#34d399' },
+            { label: 'TIME',           val: formatElapsed(elapsed),  col: '#60a5fa' },
           ].map(({ label, val, col }) => (
             <div key={label}>
               <div style={{ fontSize: 26, fontWeight: 900, color: col }}>{val}</div>
-              <div style={{ fontSize: 8, letterSpacing: 2.5, color: '#3a2e52', marginTop: 3 }}>{label}</div>
+              <div style={{ fontSize: 8, letterSpacing: 2.5, color: '#7a6a9a', marginTop: 3 }}>{label}</div>
             </div>
           ))}
         </div>
@@ -131,7 +278,7 @@ export default function LearnMode({ onBack }) {
             onClick={onBack}
             style={{
               background: 'none', border: '1px solid #1a2436', borderRadius: 6,
-              color: '#3d5068', padding: '10px 20px', cursor: 'pointer',
+              color: '#6a8aa4', padding: '10px 20px', cursor: 'pointer',
               fontFamily: "'Courier New',monospace", fontSize: 12, textTransform: 'uppercase', letterSpacing: 1,
             }}
           >
@@ -142,12 +289,10 @@ export default function LearnMode({ onBack }) {
     );
   }
 
-  // ── Learn screen ────────────────────────────────────────────────────────────
+  // ── Learn screen ────────────────────────────────────────────────────────
   if (!currentQ || !currentEntry) return null;
 
   const figPages = getFigurePages(currentQ.figures);
-  const isAnswered = selectedIdx !== null;
-  const wasCorrect = isAnswered && currentQ.options[selectedIdx].correct;
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 20px 60px', animation: 'fadeSlide 0.3s ease' }}>
@@ -156,17 +301,33 @@ export default function LearnMode({ onBack }) {
         <button
           onClick={onBack}
           style={{
-            background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#3d5068',
+            background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#6a8aa4',
             padding: '6px 13px', cursor: 'pointer', fontFamily: "'Courier New',monospace",
             fontSize: 10, textTransform: 'uppercase', letterSpacing: 1,
           }}
         >
           ← MENU
         </button>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 7.5, letterSpacing: 2.5, color: '#3a2e52', marginBottom: 2 }}>MASTERED</div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: PURPLE, lineHeight: 1.1 }}>
-            {stats.mastered} / {stats.total}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Flag button */}
+          <button
+            onClick={handleFlag}
+            title={isFlagged ? 'Remove flag' : 'Flag for extra review'}
+            style={{
+              background: isFlagged ? 'rgba(251,191,36,0.12)' : 'none',
+              border: `1px solid ${isFlagged ? 'rgba(251,191,36,0.4)' : '#1a2436'}`,
+              borderRadius: 6, color: isFlagged ? '#fbbf24' : '#4a6a84',
+              padding: '5px 10px', cursor: 'pointer', fontFamily: "'Courier New',monospace",
+              fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', transition: 'all 0.15s',
+            }}
+          >
+            {isFlagged ? '⚑ FLAGGED' : '⚐ FLAG'}
+          </button>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 7.5, letterSpacing: 2.5, color: '#7a6a9a', marginBottom: 2 }}>MASTERED</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: PURPLE, lineHeight: 1.1 }}>
+              {stats.mastered} / {stats.total}
+            </div>
           </div>
         </div>
       </div>
@@ -174,7 +335,7 @@ export default function LearnMode({ onBack }) {
       {/* Progress bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <div style={{ fontSize: 9, letterSpacing: 3, color: PURPLE }}>◈ LEARN MODE</div>
-        <div style={{ fontSize: 9, letterSpacing: 2, color: '#2d2240' }}>
+        <div style={{ fontSize: 9, letterSpacing: 2, color: '#6a5a8a' }}>
           {stats.mastered} mastered · {stats.learning} in progress · {stats.notSeen} not seen
         </div>
       </div>
@@ -187,21 +348,18 @@ export default function LearnMode({ onBack }) {
 
       {/* Streak dots */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-        <span style={{ fontSize: 8, letterSpacing: 2.5, color: '#2d2240', marginRight: 4 }}>STREAK</span>
+        <span style={{ fontSize: 8, letterSpacing: 2.5, color: '#6a5a8a', marginRight: 4 }}>STREAK</span>
         {Array.from({ length: MASTERY_THRESHOLD }).map((_, i) => (
-          <span
-            key={i}
-            style={{
-              fontSize: 14,
-              color: i < currentEntry.correctStreak ? '#a78bfa' : '#1e1530',
-            }}
-          >
+          <span key={i} style={{ fontSize: 14, color: i < currentEntry.correctStreak ? '#a78bfa' : '#1e1530' }}>
             ●
           </span>
         ))}
-        <span style={{ fontSize: 8.5, color: '#2d2240', marginLeft: 4 }}>
+        <span style={{ fontSize: 8.5, color: '#6a5a8a', marginLeft: 4 }}>
           {currentEntry.correctStreak}/{MASTERY_THRESHOLD}
         </span>
+        {isFlagged && (
+          <span style={{ fontSize: 9, color: '#fbbf24', marginLeft: 8, letterSpacing: 1 }}>⚑ PRIORITY</span>
+        )}
       </div>
 
       {/* Question number tag + ACS code */}
@@ -214,7 +372,7 @@ export default function LearnMode({ onBack }) {
         </span>
         {currentQ.acsCode && (
           <span style={{
-            fontSize: 8, letterSpacing: 2, color: '#182230', marginLeft: 8,
+            fontSize: 8, letterSpacing: 2, color: '#4a6a84', marginLeft: 8,
             background: 'rgba(255,255,255,0.02)', border: '1px solid #0f1d2c',
             borderRadius: 4, padding: '3px 8px',
           }}>
@@ -242,8 +400,13 @@ export default function LearnMode({ onBack }) {
         />
       )}
 
+      {/* Keyboard hint */}
+      <div style={{ fontSize: 8, letterSpacing: 2, color: '#2a3a4a', marginBottom: 10, textAlign: 'right' }}>
+        A / B / C to select · ENTER to continue
+      </div>
+
       {/* Answer options */}
-      <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#182230', marginBottom: 10 }}>
+      <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#4a6a84', marginBottom: 10 }}>
         SELECT YOUR ANSWER:
       </div>
       {currentQ.options.map((opt, i) => {
@@ -260,7 +423,7 @@ export default function LearnMode({ onBack }) {
             borderColor = '#ef4444'; bgColor = 'rgba(239,68,68,0.065)'; textColor = '#ef4444';
             indicator = <span style={{ float: 'right', fontSize: 10, letterSpacing: 1, color: '#ef4444' }}>✗ INCORRECT</span>;
           } else {
-            textColor = '#1e2e3e';
+            textColor = '#3a5870';
           }
         }
 
@@ -278,7 +441,7 @@ export default function LearnMode({ onBack }) {
             onMouseEnter={e => { if (!isAnswered) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; } }}
             onMouseLeave={e => { if (!isAnswered) { e.currentTarget.style.background = bgColor; e.currentTarget.style.borderColor = borderColor; } }}
           >
-            <span style={{ color: '#2a3d50', marginRight: 10, fontWeight: 700 }}>{opt.letter}.</span>
+            <span style={{ color: '#4a6a84', marginRight: 10, fontWeight: 700 }}>{opt.letter}.</span>
             {opt.text}
             {indicator}
           </button>
@@ -293,14 +456,14 @@ export default function LearnMode({ onBack }) {
           borderRadius: 8, padding: '14px 17px', marginTop: 4, marginBottom: 20,
           animation: 'popIn 0.22s ease',
         }}>
-          <div style={{ fontSize: 8, letterSpacing: 3, color: '#182230', marginBottom: 8 }}>
+          <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 8 }}>
             {wasCorrect ? '✓ WELL DONE — ' : '✗ INCORRECT — '}EXPLANATION:
           </div>
-          <p style={{ margin: 0, fontSize: 12.5, color: '#4a6480', lineHeight: 1.76 }}>
+          <p style={{ margin: 0, fontSize: 12.5, color: '#7a9ab4', lineHeight: 1.76 }}>
             {currentQ.explanation}
           </p>
           {!wasCorrect && (
-            <p style={{ margin: '8px 0 0', fontSize: 11, color: '#3a2e52', letterSpacing: 0.5 }}>
+            <p style={{ margin: '8px 0 0', fontSize: 11, color: '#7a6a9a', letterSpacing: 0.5 }}>
               This question will return soon — keep going.
             </p>
           )}

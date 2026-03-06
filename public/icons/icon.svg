@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#070b12"/>
+  <!-- Outer radar ring -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="#00ff88" stroke-width="3" opacity="0.4"/>
+  <!-- Inner radar rings -->
+  <circle cx="256" cy="256" r="165" fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0.25"/>
+  <circle cx="256" cy="256" r="100" fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0.2"/>
+  <circle cx="256" cy="256" r="42" fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0.18"/>
+  <!-- Crosshairs -->
+  <line x1="256" y1="26" x2="256" y2="486" stroke="#00ff88" stroke-width="1" opacity="0.1"/>
+  <line x1="26" y1="256" x2="486" y2="256" stroke="#00ff88" stroke-width="1" opacity="0.1"/>
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="8" fill="#00ff88" opacity="0.9"/>
+  <!-- "GO" text -->
+  <text x="256" y="220" font-family="Courier New, monospace" font-size="88" font-weight="900"
+        fill="#f0f6ff" text-anchor="middle" letter-spacing="8">GO</text>
+  <!-- "PILOT" text -->
+  <text x="256" y="310" font-family="Courier New, monospace" font-size="60" font-weight="900"
+        fill="#00ff88" text-anchor="middle" letter-spacing="10">PILOT</text>
+</svg>

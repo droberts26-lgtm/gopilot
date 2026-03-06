@@ -1,5 +1,18 @@
 import '@testing-library/jest-dom';
 
+// Mock next-auth/react so components that call useSession() work without a real provider.
+vi.mock('next-auth/react', () => ({
+  useSession:      vi.fn(() => ({ data: { user: { id: 'test-user-id', name: 'Test Pilot', email: 'test@example.com', image: null } }, status: 'authenticated' })),
+  signIn:          vi.fn(),
+  signOut:         vi.fn(),
+  SessionProvider: ({ children }) => children,
+}));
+
+// Mock the progress sync hook so tests don't make real API calls.
+vi.mock('@/hooks/useProgressSync', () => ({
+  useProgressSync: vi.fn(),
+}));
+
 // Mock next/dynamic so dynamic imports resolve synchronously in tests.
 // Components that use dynamic() will render their fallback unless we mock them.
 vi.mock('next/dynamic', () => ({
@@ -28,3 +41,7 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
   currentTime: 0,
 }));
 global.webkitAudioContext = global.AudioContext;
+
+// Suppress jsdom "Not implemented: window.scrollTo" noise.
+global.scrollTo = vi.fn();
+window.scrollTo = vi.fn();

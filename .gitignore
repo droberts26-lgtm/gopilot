@@ -15,7 +15,7 @@
 *.pem
 
 # large static assets — served via Vercel, not stored in git
-public/akts.pdf
+*.pdf
 
 # debug
 npm-debug.log*

@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { parQuestions, figurePdfPages } from '@/data/parQuestions';
 import { scenarios, levelInfo } from '@/data/atcScenarios';
+import { aviationTopics } from '@/data/aviationLessons';
 import { validateParQuestionBank, validateAtcScenarioBank } from '@/lib/validators';
 
 // ─── PAR Question bank ────────────────────────────────────────────────────────
@@ -24,13 +25,13 @@ describe('PAR question bank — data integrity', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('contains exactly 61 questions', () => {
-    expect(parQuestions).toHaveLength(61);
+  it('contains exactly 131 questions', () => {
+    expect(parQuestions).toHaveLength(131);
   });
 
-  it('has sequential IDs from 1 to 61', () => {
+  it('has sequential IDs from 1 to 131', () => {
     const ids = parQuestions.map(q => q.id).sort((a, b) => a - b);
-    expect(ids).toEqual(Array.from({ length: 61 }, (_, i) => i + 1));
+    expect(ids).toEqual(Array.from({ length: 131 }, (_, i) => i + 1));
   });
 
   it('every question has a non-empty explanation', () => {
@@ -166,6 +167,72 @@ describe('ATC scenario bank — data integrity', () => {
       expect(info.color, `${level} missing color`).toBeTruthy();
       expect(info.desc, `${level} missing desc`).toBeTruthy();
     });
+  });
+});
+
+// ─── Aviation lessons data ────────────────────────────────────────────────────
+
+describe('aviationTopics — data integrity', () => {
+  it('exports an array with at least 1 topic', () => {
+    expect(Array.isArray(aviationTopics)).toBe(true);
+    expect(aviationTopics.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('every topic has required fields: id, title, icon, color, description, slides', () => {
+    aviationTopics.forEach(topic => {
+      expect(topic.id,          `topic missing id`).toBeTruthy();
+      expect(topic.title,       `${topic.id} missing title`).toBeTruthy();
+      expect(topic.icon,        `${topic.id} missing icon`).toBeTruthy();
+      expect(topic.color,       `${topic.id} missing color`).toBeTruthy();
+      expect(topic.description, `${topic.id} missing description`).toBeTruthy();
+      expect(Array.isArray(topic.slides), `${topic.id} slides must be an array`).toBe(true);
+    });
+  });
+
+  it('every topic has at least 2 slides', () => {
+    aviationTopics.forEach(topic => {
+      expect(topic.slides.length, `${topic.id} has fewer than 2 slides`).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it('every slide has required fields: title, body, imageUrl, imageAlt, imageCaption', () => {
+    aviationTopics.forEach(topic => {
+      topic.slides.forEach((slide, i) => {
+        const ref = `${topic.id}[${i}]`;
+        expect(slide.title,        `${ref} missing title`).toBeTruthy();
+        expect(slide.body,         `${ref} missing body`).toBeTruthy();
+        expect(slide.imageUrl,     `${ref} missing imageUrl`).toBeTruthy();
+        expect(slide.imageAlt,     `${ref} missing imageAlt`).toBeTruthy();
+        expect(slide.imageCaption, `${ref} missing imageCaption`).toBeTruthy();
+      });
+    });
+  });
+
+  it('all slide body text is at least 50 characters', () => {
+    aviationTopics.forEach(topic => {
+      topic.slides.forEach((slide, i) => {
+        expect(
+          slide.body.trim().length,
+          `${topic.id}[${i}] body is too short`,
+        ).toBeGreaterThanOrEqual(50);
+      });
+    });
+  });
+
+  it('all imageUrls are valid https URLs', () => {
+    aviationTopics.forEach(topic => {
+      topic.slides.forEach((slide, i) => {
+        expect(
+          slide.imageUrl.startsWith('https://'),
+          `${topic.id}[${i}] imageUrl is not https: ${slide.imageUrl}`,
+        ).toBe(true);
+      });
+    });
+  });
+
+  it('topic IDs are unique', () => {
+    const ids = aviationTopics.map(t => t.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
 

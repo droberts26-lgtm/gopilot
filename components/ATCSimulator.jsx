@@ -78,9 +78,9 @@ export default function ATCSimulator() {
             <div style={{ fontSize: 9, letterSpacing: 5, color: '#38bdf8', marginBottom: 8, opacity: 0.8 }}>
               ◈ ATC RADIO COMMUNICATIONS ◈
             </div>
-            <p style={{ color: '#3d5068', fontSize: 13, marginTop: 14, lineHeight: 1.7, maxWidth: 460, margin: '14px auto 0' }}>
-              Select a difficulty level. You'll receive <strong style={{ color: '#4a7090' }}>10 random transmissions</strong> drawn from a bank of{' '}
-              <strong style={{ color: '#4a7090' }}>{totalQ}</strong> unique scenarios. Choose your best readback.
+            <p style={{ color: '#6a8aa4', fontSize: 13, marginTop: 14, lineHeight: 1.7, maxWidth: 460, margin: '14px auto 0' }}>
+              Select a difficulty level. You'll receive <strong style={{ color: '#7a9ab4' }}>10 random transmissions</strong> drawn from a bank of{' '}
+              <strong style={{ color: '#7a9ab4' }}>{totalQ}</strong> unique scenarios. Choose your best readback.
             </p>
           </div>
 
@@ -121,14 +121,14 @@ export default function ATCSimulator() {
                   <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 1.2, color: val.color }}>
                     {val.label.toUpperCase()}
                   </div>
-                  <div style={{ fontSize: 11.5, color: '#344a5e', marginTop: 3 }}>{val.desc}</div>
+                  <div style={{ fontSize: 11.5, color: '#6a8aa4', marginTop: 3 }}>{val.desc}</div>
                 </div>
                 <span style={{ color: `${val.color}55`, fontSize: 20 }}>›</span>
               </button>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: 40, fontSize: 10, color: '#0d1724', letterSpacing: 3 }}>
+          <div style={{ textAlign: 'center', marginTop: 40, fontSize: 10, color: '#2a4464', letterSpacing: 3 }}>
             PHRASEOLOGY · FAA AIM & ORDER 7110.65
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function ATCSimulator() {
             <button
               onClick={() => setScreen('menu')}
               style={{
-                background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#3d5068',
+                background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#6a8aa4',
                 padding: '6px 13px', cursor: 'pointer', fontFamily: "'Courier New',monospace",
                 fontSize: 10, textTransform: 'uppercase', letterSpacing: 1,
               }}
@@ -156,7 +156,7 @@ export default function ATCSimulator() {
                 { label: 'BEST',   val: bestStreak, col: info.color },
               ].map(({ label, val, col }) => (
                 <div key={label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 7.5, letterSpacing: 2.5, color: '#182230', marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 7.5, letterSpacing: 2.5, color: '#4a6a84', marginBottom: 2 }}>{label}</div>
                   <div style={{ fontSize: 20, fontWeight: 900, color: col, lineHeight: 1.1 }}>{val}</div>
                 </div>
               ))}
@@ -166,7 +166,7 @@ export default function ATCSimulator() {
           {/* Progress */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ fontSize: 9, letterSpacing: 3, color: info.color }}>{info.icon} {info.label.toUpperCase()}</div>
-            <div style={{ fontSize: 9, letterSpacing: 2, color: '#182230' }}>Q {currentIdx + 1} / {questions.length}</div>
+            <div style={{ fontSize: 9, letterSpacing: 2, color: '#4a6a84' }}>Q {currentIdx + 1} / {questions.length}</div>
           </div>
           <div style={{ height: 2, background: '#0b1220', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
             <div style={{
@@ -178,9 +178,9 @@ export default function ATCSimulator() {
           {/* Situation */}
           <div style={{
             background: 'rgba(255,255,255,0.015)', border: '1px solid #111c2a', borderRadius: 8,
-            padding: '11px 15px', marginBottom: 14, fontSize: 12.5, color: '#364e66', lineHeight: 1.62,
+            padding: '11px 15px', marginBottom: 14, fontSize: 12.5, color: '#6a8aa4', lineHeight: 1.62,
           }}>
-            <span style={{ color: '#1a2d3f', letterSpacing: 2.5, fontSize: 9 }}>SITUATION // </span>
+            <span style={{ color: '#4a6a84', letterSpacing: 2.5, fontSize: 9 }}>SITUATION // </span>
             {q.situation}
           </div>
 
@@ -202,7 +202,7 @@ export default function ATCSimulator() {
           </div>
 
           {/* Options */}
-          <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#182230', marginBottom: 10 }}>
+          <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#4a6a84', marginBottom: 10 }}>
             YOUR RESPONSE — SELECT ONE:
           </div>
           {q.options.map((opt, i) => {
@@ -212,7 +212,7 @@ export default function ATCSimulator() {
             if (selected !== null) {
               if (opt.correct)       { borderColor = '#00ff88'; bgColor = 'rgba(0,255,136,0.065)'; textColor = '#00ff88'; }
               else if (i === selected) { borderColor = '#ef4444'; bgColor = 'rgba(239,68,68,0.065)'; textColor = '#ef4444'; }
-              else                   { textColor = '#1e2e3e'; }
+              else                   { textColor = '#3a5870'; }
             }
             return (
               <button
@@ -228,7 +228,7 @@ export default function ATCSimulator() {
                 onMouseEnter={e => { if (selected === null) { e.currentTarget.style.background = 'rgba(255,255,255,0.055)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
                 onMouseLeave={e => { if (selected === null) { e.currentTarget.style.background = bgColor; e.currentTarget.style.borderColor = borderColor; } }}
               >
-                <span style={{ color: selected !== null ? (opt.correct ? '#00ff8844' : '#1a2d3f') : '#1a2d3f', marginRight: 10 }}>
+                <span style={{ color: selected !== null ? (opt.correct ? '#00ff8844' : '#4a6a84') : '#4a6a84', marginRight: 10 }}>
                   {String.fromCharCode(65 + i)}.
                 </span>
                 {opt.text}
@@ -248,8 +248,8 @@ export default function ATCSimulator() {
               background: 'rgba(255,255,255,0.014)', border: '1px solid #111c2a', borderRadius: 8,
               padding: '13px 16px', marginTop: 2, marginBottom: 18, animation: 'popIn 0.22s ease',
             }}>
-              <div style={{ fontSize: 8, letterSpacing: 3, color: '#182230', marginBottom: 6 }}>INSTRUCTOR NOTE</div>
-              <p style={{ margin: 0, fontSize: 12.5, color: '#3f5e78', lineHeight: 1.76 }}>{q.explanation}</p>
+              <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 6 }}>INSTRUCTOR NOTE</div>
+              <p style={{ margin: 0, fontSize: 12.5, color: '#7090aa', lineHeight: 1.76 }}>{q.explanation}</p>
             </div>
           )}
 
@@ -275,12 +275,12 @@ export default function ATCSimulator() {
       {/* RESULTS */}
       {screen === 'result' && (
         <div style={{ maxWidth: 540, margin: '0 auto', padding: '58px 22px', textAlign: 'center', animation: 'fadeSlide 0.4s ease' }}>
-          <div style={{ fontSize: 9, letterSpacing: 5, color: '#182230', marginBottom: 18 }}>SESSION COMPLETE</div>
+          <div style={{ fontSize: 9, letterSpacing: 5, color: '#4a6a84', marginBottom: 18 }}>SESSION COMPLETE</div>
           <div style={{ fontSize: 58, marginBottom: 10 }}>
             {pct >= 90 ? '🏆' : pct >= 70 ? '📻' : pct >= 50 ? '📖' : '🔁'}
           </div>
           <h2 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: '#f0f6ff' }}>{score} / {questions.length}</h2>
-          <p style={{ color: '#2d4155', fontSize: 13, lineHeight: 1.65 }}>
+          <p style={{ color: '#5a7a94', fontSize: 13, lineHeight: 1.65 }}>
             {pct >= 90 ? 'Outstanding. You\'re cleared for full operations.' :
              pct >= 70 ? 'Solid performance. Review the highlighted areas.' :
              pct >= 50 ? 'Keep studying. Focus on mandatory readback items.' :
@@ -292,11 +292,11 @@ export default function ATCSimulator() {
             padding: '18px', background: 'rgba(255,255,255,0.015)', border: '1px solid #111c2a', borderRadius: 12,
           }}>
             <div>
-              <div style={{ fontSize: 8, letterSpacing: 3, color: '#182230' }}>BEST STREAK</div>
+              <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84' }}>BEST STREAK</div>
               <div style={{ fontSize: 30, fontWeight: 900, color: '#38bdf8' }}>🔥 {bestStreak}</div>
             </div>
             <div>
-              <div style={{ fontSize: 8, letterSpacing: 3, color: '#182230' }}>ACCURACY</div>
+              <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84' }}>ACCURACY</div>
               <div style={{ fontSize: 30, fontWeight: 900, color: info.color }}>{Math.round(pct)}%</div>
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function ATCSimulator() {
             <button
               onClick={() => setScreen('menu')}
               style={{
-                background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#3d5068',
+                background: 'none', border: '1px solid #1a2436', borderRadius: 6, color: '#6a8aa4',
                 padding: '10px 20px', cursor: 'pointer', fontFamily: "'Courier New',monospace",
                 fontSize: 12, textTransform: 'uppercase', letterSpacing: 1,
               }}

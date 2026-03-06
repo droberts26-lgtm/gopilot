@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
 import { useProgressSync } from '@/hooks/useProgressSync';
 
@@ -45,14 +44,9 @@ const TABS = [
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('atc');
 
   useProgressSync();
-
-  if (showSplash) {
-    return <SplashScreen onEnter={() => setShowSplash(false)} />;
-  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#070b12', position: 'relative', overflow: 'hidden' }}>

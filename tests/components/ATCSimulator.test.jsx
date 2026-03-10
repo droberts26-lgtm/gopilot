@@ -7,19 +7,19 @@ describe('ATCSimulator', () => {
 
   describe('menu screen', () => {
     it('renders the menu by default', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       expect(screen.getByText(/ATC RADIO COMMUNICATIONS/i)).toBeInTheDocument();
     });
 
     it('shows all three difficulty levels', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       expect(screen.getByText(/STUDENT PILOT/i)).toBeInTheDocument();
       expect(screen.getByText(/GENERAL AVIATION/i)).toBeInTheDocument();
       expect(screen.getByText(/COMMERCIAL \/ ATP/i)).toBeInTheDocument();
     });
 
     it('shows the total scenario count', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       // 45 scenarios total (15 per level × 3)
       expect(screen.getByText('45')).toBeInTheDocument();
     });
@@ -29,44 +29,44 @@ describe('ATCSimulator', () => {
 
   describe('starting a level', () => {
     it('transitions to the sim screen when Student Pilot is clicked', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       expect(screen.getByText(/ATC TRANSMISSION/i)).toBeInTheDocument();
     });
 
     it('transitions to the sim screen when General Aviation is clicked', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/GENERAL AVIATION/i));
       expect(screen.getByText(/ATC TRANSMISSION/i)).toBeInTheDocument();
     });
 
     it('transitions to the sim screen when Commercial / ATP is clicked', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/COMMERCIAL \/ ATP/i));
       expect(screen.getByText(/ATC TRANSMISSION/i)).toBeInTheDocument();
     });
 
     it('shows Q 1 / 10 progress indicator', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       expect(screen.getByText(/Q 1 \/ 10/i)).toBeInTheDocument();
     });
 
     it('shows SITUATION and ATC TRANSMISSION sections', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       expect(screen.getByText(/SITUATION \/\//i)).toBeInTheDocument();
       expect(screen.getByText(/ATC TRANSMISSION/i)).toBeInTheDocument();
     });
 
     it('shows initial score of 0/0', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       expect(screen.getByText('0/0')).toBeInTheDocument();
     });
 
     it('shows STREAK counter starting at 0', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       // The streak section shows '0' when no streak
       const scoreSection = screen.getByText('STREAK').closest('div').parentElement;
@@ -78,7 +78,7 @@ describe('ATCSimulator', () => {
 
   describe('answering questions', () => {
     const startStudentLevel = () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
     };
 
@@ -171,7 +171,7 @@ describe('ATCSimulator', () => {
 
   describe('results screen', () => {
     const completeStudentLevel = () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       for (let i = 0; i < 10; i++) {
         const optButtons = screen.getAllByRole('button').filter(b =>
@@ -216,7 +216,7 @@ describe('ATCSimulator', () => {
 
   describe('back navigation', () => {
     it('returns to menu via ← MENU button', () => {
-      render(<ATCSimulator />);
+      render(<ATCSimulator pro={true} />);
       fireEvent.click(screen.getByText(/STUDENT PILOT/i));
       fireEvent.click(screen.getByText(/← MENU/i));
       expect(screen.getByText(/ATC RADIO COMMUNICATIONS/i)).toBeInTheDocument();

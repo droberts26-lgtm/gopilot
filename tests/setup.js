@@ -45,3 +45,4 @@ global.webkitAudioContext = global.AudioContext;
 // Suppress jsdom "Not implemented: window.scrollTo" noise.
 global.scrollTo = vi.fn();
 window.scrollTo = vi.fn();
+

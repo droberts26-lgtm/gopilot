@@ -137,7 +137,7 @@ const ALL_PAIRS = [
 
 /** Navigate from categories → Airspace → Airspace Classes game */
 const startAirspaceClassesGame = () => {
-  render(<MatchingMode onBack={noop} />);
+  render(<MatchingMode onBack={noop} pro={true} />);
   fireEvent.click(screen.getByText(/^AIRSPACE$/i));
   fireEvent.click(screen.getByText(/AIRSPACE CLASSES/i));
 };
@@ -163,29 +163,29 @@ describe('MatchingMode', () => {
 
   describe('categories screen', () => {
     it('shows MATCHING MODE label', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       expect(screen.getByText(/MATCHING MODE/i)).toBeInTheDocument();
     });
 
     it('shows CHOOSE A CATEGORY heading', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       expect(screen.getByText(/CHOOSE A CATEGORY/i)).toBeInTheDocument();
     });
 
     it('renders all category cards', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       expect(screen.getByText(/^AIRSPACE$/i)).toBeInTheDocument();
       expect(screen.getByText(/^WEATHER$/i)).toBeInTheDocument();
     });
 
     it('shows ← MENU button', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       expect(screen.getByText(/← MENU/i)).toBeInTheDocument();
     });
 
     it('calls onBack when ← MENU is clicked', () => {
       const onBack = vi.fn();
-      render(<MatchingMode onBack={onBack} />);
+      render(<MatchingMode onBack={onBack} pro={true} />);
       fireEvent.click(screen.getByText(/← MENU/i));
       expect(onBack).toHaveBeenCalledOnce();
     });
@@ -202,13 +202,13 @@ describe('MatchingMode', () => {
 
   describe('sets screen', () => {
     it('transitions to sets screen when a category is clicked', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       fireEvent.click(screen.getByText(/^AIRSPACE$/i));
       expect(screen.getByText(/AIRSPACE CLASSES/i)).toBeInTheDocument();
     });
 
     it('shows all sets for the chosen category', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       fireEvent.click(screen.getByText(/^AIRSPACE$/i));
       expect(screen.getByText(/AIRSPACE CLASSES/i)).toBeInTheDocument();
       expect(screen.getByText(/VFR MINIMUMS/i)).toBeInTheDocument();
@@ -216,13 +216,13 @@ describe('MatchingMode', () => {
     });
 
     it('shows ← BACK button on sets screen', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       fireEvent.click(screen.getByText(/^AIRSPACE$/i));
       expect(screen.getByText(/← BACK/i)).toBeInTheDocument();
     });
 
     it('returns to categories screen when ← BACK is clicked', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       fireEvent.click(screen.getByText(/^AIRSPACE$/i));
       fireEvent.click(screen.getByText(/← BACK/i));
       expect(screen.getByText(/CHOOSE A CATEGORY/i)).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('MatchingMode', () => {
     });
 
     it('does NOT show best time chip for a set that has never been completed', () => {
-      render(<MatchingMode onBack={noop} />);
+      render(<MatchingMode onBack={noop} pro={true} />);
       fireEvent.click(screen.getByText(/^AIRSPACE$/i));
       expect(screen.queryByText(/⏱ BEST:/i)).toBeNull();
     });
@@ -366,7 +366,7 @@ describe('MatchingMode', () => {
 
     it('calls onBack when ← BACK TO MENU is clicked', () => {
       const onBack = vi.fn();
-      render(<MatchingMode onBack={onBack} />);
+      render(<MatchingMode onBack={onBack} pro={true} />);
       fireEvent.click(screen.getAllByText(/^AIRSPACE$/i)[0]);
       fireEvent.click(screen.getAllByText(/AIRSPACE CLASSES/i)[0]);
       matchAllPairs();

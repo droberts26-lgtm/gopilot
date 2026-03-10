@@ -7,6 +7,7 @@ import { buildSession, calculatePct, isPassing, getPerformanceBadge } from '@/li
 import { groupByAcsArea } from '@/lib/acsAreas';
 import LearnMode from './LearnMode';
 import MatchingMode from './MatchingMode';
+import ProModal from './ProModal';
 
 // Load PDF viewer client-side only
 const PdfFigure = dynamic(() => import('./PdfFigure'), { ssr: false });
@@ -22,8 +23,9 @@ function formatTimer(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-export default function AirmanKnowledge() {
+export default function AirmanKnowledge({ pro = false }) {
   const [screen,        setScreen]        = useState('menu'); // menu | quiz | result | learn | match
+  const [showProModal,  setShowProModal]  = useState(false);
   const [questions,     setQuestions]     = useState([]);
   const [currentIdx,    setCurrentIdx]    = useState(0);
   const [selected,      setSelected]      = useState(null);    // index of selected option
@@ -145,6 +147,7 @@ export default function AirmanKnowledge() {
               desc: 'All PAR exam questions, randomized. Mirrors the actual FAA knowledge test format.',
               icon: '📋',
               color: '#f59e0b',
+              proOnly: true,
             },
             {
               key: 'practice',
@@ -152,6 +155,7 @@ export default function AirmanKnowledge() {
               desc: '10 randomly selected questions for a focused study session.',
               icon: '⚡',
               color: '#34d399',
+              proOnly: false,
             },
             {
               key: 'learn',
@@ -159,6 +163,7 @@ export default function AirmanKnowledge() {
               desc: 'Mastery-based: every question must be answered correctly 3× before it\'s done. Wrong answers recycle to the front.',
               icon: '🧠',
               color: '#a78bfa',
+              proOnly: true,
             },
             {
               key: 'match',
@@ -166,51 +171,70 @@ export default function AirmanKnowledge() {
               desc: 'Match aviation terms to their definitions. 6 categories, 144 pairs total.',
               icon: '🔗',
               color: '#06b6d4',
+              proOnly: true,
             },
-          ].map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => (opt.key === 'learn' || opt.key === 'match') ? setScreen(opt.key === 'learn' ? 'learn' : 'match') : startQuiz(opt.key)}
-              style={{
-                background: 'rgba(255,255,255,0.017)',
-                border: `1px solid ${opt.color}28`,
-                borderLeft: `3px solid ${opt.color}`,
-                borderRadius: 9,
-                padding: '18px 22px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 17,
-                textAlign: 'left',
-                transition: 'all 0.16s',
-                color: '#e2e8f0',
-                fontFamily: "'Courier New',monospace",
-                width: '100%',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = `${opt.color}0d`;
-                e.currentTarget.style.borderColor = `${opt.color}55`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.017)';
-                e.currentTarget.style.borderColor = `${opt.color}28`;
-              }}
-            >
-              <span style={{ fontSize: 28 }}>{opt.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.2, color: opt.color }}>
-                  {opt.label}
+          ].map(opt => {
+            const locked = opt.proOnly && !pro;
+            const handleClick = () => {
+              if (locked) { setShowProModal(true); return; }
+              if (opt.key === 'learn') { setScreen('learn'); return; }
+              if (opt.key === 'match') { setScreen('match'); return; }
+              startQuiz(opt.key);
+            };
+            return (
+              <button
+                key={opt.key}
+                onClick={handleClick}
+                style={{
+                  background: 'rgba(255,255,255,0.017)',
+                  border: `1px solid ${opt.color}28`,
+                  borderLeft: `3px solid ${opt.color}`,
+                  borderRadius: 9,
+                  padding: '18px 22px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 17,
+                  textAlign: 'left',
+                  transition: 'all 0.16s',
+                  color: '#e2e8f0',
+                  fontFamily: "'Courier New',monospace",
+                  width: '100%',
+                  position: 'relative',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = `${opt.color}0d`;
+                  e.currentTarget.style.borderColor = `${opt.color}55`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.017)';
+                  e.currentTarget.style.borderColor = `${opt.color}28`;
+                }}
+              >
+                <span style={{ fontSize: 28 }}>{opt.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.2, color: opt.color }}>
+                    {opt.label}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#6a8aa4', marginTop: 3 }}>{opt.desc}</div>
                 </div>
-                <div style={{ fontSize: 11.5, color: '#6a8aa4', marginTop: 3 }}>{opt.desc}</div>
-              </div>
-              <span style={{ color: `${opt.color}55`, fontSize: 20 }}>›</span>
-            </button>
-          ))}
+                {locked ? (
+                  <span style={{
+                    position: 'absolute', top: 8, right: 10,
+                    fontSize: 9, letterSpacing: 1, color: '#f59e0b',
+                    fontFamily: "'Courier New', monospace", fontWeight: 700,
+                  }}>🔒 PRO</span>
+                ) : (
+                  <span style={{ color: `${opt.color}55`, fontSize: 20 }}>›</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* FAA Exam Timer toggle */}
         <div
-          onClick={() => setTimerEnabled(t => !t)}
+          onClick={() => pro ? setTimerEnabled(t => !t) : setShowProModal(true)}
           style={{
             marginTop: 14, padding: '12px 18px',
             background: timerEnabled ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.01)',
@@ -218,6 +242,7 @@ export default function AirmanKnowledge() {
             borderRadius: 8, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 12,
             transition: 'all 0.18s',
+            position: 'relative',
           }}
         >
           {/* Toggle pill */}
@@ -237,6 +262,13 @@ export default function AirmanKnowledge() {
           <span style={{ fontSize: 11, color: timerEnabled ? '#f59e0b' : '#4a6a84', letterSpacing: 1 }}>
             FAA EXAM TIMER (2:30:00) — FULL TEST ONLY
           </span>
+          {!pro && (
+            <span style={{
+              position: 'absolute', top: 8, right: 10,
+              fontSize: 9, letterSpacing: 1, color: '#f59e0b',
+              fontFamily: "'Courier New', monospace", fontWeight: 700,
+            }}>🔒 PRO</span>
+          )}
         </div>
 
         {/* Stats strip */}
@@ -289,6 +321,8 @@ export default function AirmanKnowledge() {
         <div style={{ textAlign: 'center', marginTop: 28, fontSize: 10, color: '#2a4464', letterSpacing: 3 }}>
           FAA-CT-8080-2H SUPPLEMENT · PRIVATE PILOT ACS
         </div>
+
+        {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
       </div>
     );
   }
@@ -628,7 +662,7 @@ export default function AirmanKnowledge() {
 
   // ─── MATCHING MODE ──────────────────────────────────────────────────────────
   if (screen === 'match') {
-    return <MatchingMode onBack={() => setScreen('menu')} />;
+    return <MatchingMode onBack={() => setScreen('menu')} pro={pro} />;
   }
 
   return null;

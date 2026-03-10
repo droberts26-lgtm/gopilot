@@ -9,29 +9,29 @@ describe('AirmanKnowledge', () => {
 
   describe('menu screen', () => {
     it('renders the menu by default', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.getByText(/FAA PRIVATE PILOT KNOWLEDGE TEST/i)).toBeInTheDocument();
     });
 
     it('shows Full Test, Quick Practice, and Learn Mode options', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.getByRole('button', { name: /FULL TEST/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /QUICK PRACTICE/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /LEARN MODE/i })).toBeInTheDocument();
     });
 
     it('shows the total question count stats', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.getByText('131')).toBeInTheDocument();
     });
 
     it('shows the FAA exam timer toggle', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.getByText(/FAA EXAM TIMER/i)).toBeInTheDocument();
     });
 
     it('shows a search input', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.getByPlaceholderText(/Search by keyword/i)).toBeInTheDocument();
     });
   });
@@ -40,7 +40,7 @@ describe('AirmanKnowledge', () => {
 
   describe('search/filter', () => {
     it('shows matching question count when a search term is entered', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.change(screen.getByPlaceholderText(/Search by keyword/i), {
         target: { value: 'altitude' },
       });
@@ -48,7 +48,7 @@ describe('AirmanKnowledge', () => {
     });
 
     it('shows 0 matching questions for a nonsense search', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.change(screen.getByPlaceholderText(/Search by keyword/i), {
         target: { value: 'xyzabcnotarealterm999' },
       });
@@ -56,7 +56,7 @@ describe('AirmanKnowledge', () => {
     });
 
     it('does not show the matching count when search box is empty', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       expect(screen.queryByText(/MATCHING QUESTION/i)).toBeNull();
     });
   });
@@ -65,13 +65,13 @@ describe('AirmanKnowledge', () => {
 
   describe('timer toggle', () => {
     it('starts in disabled state', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       // Timer label exists but the toggle is off by default (muted color)
       expect(screen.getByText(/FAA EXAM TIMER/i)).toBeInTheDocument();
     });
 
     it('clicking the timer area toggles its active state visually', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       // Click the timer toggle container
       fireEvent.click(screen.getByText(/FAA EXAM TIMER/i).closest('div'));
       // Toggle is now enabled — timer text should still be there
@@ -83,32 +83,32 @@ describe('AirmanKnowledge', () => {
 
   describe('starting a quiz', () => {
     it('transitions to the quiz screen when Full Test is clicked', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByRole('button', { name: /FULL TEST/i }));
       expect(screen.getByText(/AIRMAN KNOWLEDGE/i)).toBeInTheDocument();
       expect(screen.getByText(/QUESTION 1/i)).toBeInTheDocument();
     });
 
     it('transitions to the quiz screen when Quick Practice is clicked', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       expect(screen.getByText(/QUESTION 1/i)).toBeInTheDocument();
     });
 
     it('shows Q 1 / N in the progress indicator', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       expect(screen.getByText(/Q 1 \/ 10/i)).toBeInTheDocument();
     });
 
     it('full test shows Q 1 / 131', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByRole('button', { name: /FULL TEST/i }));
       expect(screen.getByText(/Q 1 \/ 131/i)).toBeInTheDocument();
     });
 
     it('renders answer options A, B, C on first question', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       expect(screen.getByText(/^A\./)).toBeInTheDocument();
       expect(screen.getByText(/^B\./)).toBeInTheDocument();
@@ -116,7 +116,7 @@ describe('AirmanKnowledge', () => {
     });
 
     it('shows keyboard hint in quiz', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       expect(screen.getByText(/A \/ B \/ C to select/i)).toBeInTheDocument();
     });
@@ -126,7 +126,7 @@ describe('AirmanKnowledge', () => {
 
   describe('answering questions', () => {
     const startQuickPractice = () => {
-      const utils = render(<AirmanKnowledge />);
+      const utils = render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       return utils;
     };
@@ -168,7 +168,7 @@ describe('AirmanKnowledge', () => {
     });
 
     it('shows VIEW RESULTS on the last question', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       for (let i = 0; i < 9; i++) {
         const optButtons = screen.getAllByRole('button').filter(b => /^[ABC]\./.test(b.textContent));
@@ -185,7 +185,7 @@ describe('AirmanKnowledge', () => {
 
   describe('results screen', () => {
     const completeQuickPractice = () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       for (let i = 0; i < 10; i++) {
         const optButtons = screen.getAllByRole('button').filter(b => /^[ABC]\./.test(b.textContent));
@@ -227,7 +227,7 @@ describe('AirmanKnowledge', () => {
     });
 
     it('shows REVIEW MISSED button when there are wrong answers', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       // Deliberately answer wrong (first option, which may be wrong for some questions)
       // We need at least one wrong — answer all 10 with option A (likely wrong for some)
@@ -253,7 +253,7 @@ describe('AirmanKnowledge', () => {
 
   describe('ACS breakdown on full test', () => {
     it('starts full test mode (showing Q 1 / 131) — breakdown requires completing all 131 questions', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByRole('button', { name: /FULL TEST/i }));
       expect(screen.getByText(/Q 1 \/ 131/i)).toBeInTheDocument();
     });
@@ -263,7 +263,7 @@ describe('AirmanKnowledge', () => {
 
   describe('back navigation', () => {
     it('returns to menu from quiz via ← MENU button', () => {
-      render(<AirmanKnowledge />);
+      render(<AirmanKnowledge pro={true} />);
       fireEvent.click(screen.getByText(/QUICK PRACTICE/i));
       fireEvent.click(screen.getByText(/← MENU/i));
       expect(screen.getByText(/FAA PRIVATE PILOT KNOWLEDGE TEST/i)).toBeInTheDocument();

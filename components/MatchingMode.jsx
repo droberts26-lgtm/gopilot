@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { matchingCategories } from '@/data/matchingSets';
 import { loadBestTimes, saveBestTime } from '@/lib/matchingTimes';
+import ProModal from '@/components/ProModal';
 
 const CYAN = '#06b6d4';
 const FLASH_MS = 600;
@@ -49,8 +50,9 @@ function formatCompact(ms) {
  * Props:
  *   onBack — called when user exits to the Airman Knowledge menu
  */
-export default function MatchingMode({ onBack }) {
+export default function MatchingMode({ onBack, pro = false }) {
   const [screen,        setScreen]        = useState('categories');
+  const [showProModal,  setShowProModal]  = useState(false);
   const [category,      setCategory]      = useState(null);
   const [set,           setSet]           = useState(null);
   const [leftItems,     setLeftItems]     = useState([]);
@@ -160,12 +162,13 @@ export default function MatchingMode({ onBack }) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {matchingCategories.map(cat => {
+          {matchingCategories.map((cat, idx) => {
+            const locked = !pro && idx > 0;
             const completedSets = cat.sets.filter(s => bestTimes[s.id] != null).length;
             return (
               <button
                 key={cat.id}
-                onClick={() => { setCategory(cat); setScreen('sets'); }}
+                onClick={() => locked ? setShowProModal(true) : (setCategory(cat), setScreen('sets'))}
                 style={{
                   background: 'rgba(255,255,255,0.03)',
                   border: `1px solid ${cat.color}33`,
@@ -177,6 +180,7 @@ export default function MatchingMode({ onBack }) {
                   fontFamily: "'Courier New',monospace",
                   color: '#e2e8f0',
                   transition: 'all 0.16s',
+                  position: 'relative',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = `${cat.color}15`;
@@ -197,6 +201,13 @@ export default function MatchingMode({ onBack }) {
                     <span style={{ color: cat.color, marginLeft: 6 }}>· {completedSets}/{cat.sets.length} DONE</span>
                   )}
                 </div>
+                {locked && (
+                  <span style={{
+                    position: 'absolute', top: 8, right: 10,
+                    fontSize: 9, letterSpacing: 1, color: '#f59e0b',
+                    fontFamily: "'Courier New', monospace", fontWeight: 700,
+                  }}>🔒 PRO</span>
+                )}
               </button>
             );
           })}
@@ -205,6 +216,8 @@ export default function MatchingMode({ onBack }) {
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 10, color: '#5a7a94', letterSpacing: 3 }}>
           18 SETS · 144 PAIRS TOTAL
         </div>
+
+        {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
       </div>
     );
   }

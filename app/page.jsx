@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
 import { useProgressSync } from '@/hooks/useProgressSync';
+import { isPro } from '@/lib/pro';
 
 const ATCSimulator    = dynamic(() => import('@/components/ATCSimulator'),    { ssr: false });
 const AirmanKnowledge = dynamic(() => import('@/components/AirmanKnowledge'), { ssr: false });
@@ -48,6 +49,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('atc');
   // Guests see the splash screen; signed-in users go straight to the app
   const [showSplash, setShowSplash] = useState(!session);
+  const pro = isPro(session);
 
   useProgressSync();
 
@@ -223,8 +225,8 @@ export default function HomePage() {
 
       {/* ── Main Content ── */}
       <main style={{ position: 'relative', zIndex: 1 }}>
-        {activeTab === 'atc'       && <ATCSimulator />}
-        {activeTab === 'knowledge' && <AirmanKnowledge />}
+        {activeTab === 'atc'       && <ATCSimulator pro={pro} />}
+        {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} />}
         {activeTab === 'basics'    && <AviationBasics />}
         {activeTab === 'videos'    && <VideoLibrary />}
       </main>

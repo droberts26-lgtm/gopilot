@@ -3,11 +3,13 @@
 import { useState, useRef } from 'react';
 import { scenarios, levelInfo } from '@/data/atcScenarios';
 import { buildSession } from '@/lib/quiz';
+import ProModal from '@/components/ProModal';
 
 const QUESTIONS_PER_SESSION = 10;
 
-export default function ATCSimulator() {
+export default function ATCSimulator({ pro = false }) {
   const [screen, setScreen]       = useState('menu');
+  const [showProModal, setShowProModal] = useState(false);
   const [level, setLevel]         = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -85,47 +87,59 @@ export default function ATCSimulator() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {Object.entries(levelInfo).map(([key, val]) => (
-              <button
-                key={key}
-                onClick={() => startLevel(key)}
-                style={{
-                  background: 'rgba(255,255,255,0.017)',
-                  border: `1px solid ${val.color}28`,
-                  borderLeft: `3px solid ${val.color}`,
-                  borderRadius: 9,
-                  padding: '18px 22px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 17,
-                  textAlign: 'left',
-                  transition: 'all 0.16s',
-                  color: '#e2e8f0',
-                  fontFamily: "'Courier New',monospace",
-                  width: '100%',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = `${val.color}0d`;
-                  e.currentTarget.style.borderColor = `${val.color}66`;
-                  e.currentTarget.style.borderLeftColor = val.color;
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.017)';
-                  e.currentTarget.style.borderColor = `${val.color}28`;
-                  e.currentTarget.style.borderLeftColor = val.color;
-                }}
-              >
-                <span style={{ fontSize: 26 }}>{val.icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 1.2, color: val.color }}>
-                    {val.label.toUpperCase()}
+            {Object.entries(levelInfo).map(([key, val]) => {
+              const locked = !pro && key !== 'student';
+              return (
+                <button
+                  key={key}
+                  onClick={() => locked ? setShowProModal(true) : startLevel(key)}
+                  style={{
+                    background: 'rgba(255,255,255,0.017)',
+                    border: `1px solid ${val.color}28`,
+                    borderLeft: `3px solid ${val.color}`,
+                    borderRadius: 9,
+                    padding: '18px 22px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 17,
+                    textAlign: 'left',
+                    transition: 'all 0.16s',
+                    color: '#e2e8f0',
+                    fontFamily: "'Courier New',monospace",
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = `${val.color}0d`;
+                    e.currentTarget.style.borderColor = `${val.color}66`;
+                    e.currentTarget.style.borderLeftColor = val.color;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.017)';
+                    e.currentTarget.style.borderColor = `${val.color}28`;
+                    e.currentTarget.style.borderLeftColor = val.color;
+                  }}
+                >
+                  <span style={{ fontSize: 26 }}>{val.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 1.2, color: val.color }}>
+                      {val.label.toUpperCase()}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#6a8aa4', marginTop: 3 }}>{val.desc}</div>
                   </div>
-                  <div style={{ fontSize: 11.5, color: '#6a8aa4', marginTop: 3 }}>{val.desc}</div>
-                </div>
-                <span style={{ color: `${val.color}55`, fontSize: 20 }}>›</span>
-              </button>
-            ))}
+                  {locked ? (
+                    <span style={{
+                      position: 'absolute', top: 8, right: 10,
+                      fontSize: 9, letterSpacing: 1, color: '#f59e0b',
+                      fontFamily: "'Courier New', monospace", fontWeight: 700,
+                    }}>🔒 PRO</span>
+                  ) : (
+                    <span style={{ color: `${val.color}55`, fontSize: 20 }}>›</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 40, fontSize: 10, color: '#2a4464', letterSpacing: 3 }}>
@@ -325,6 +339,8 @@ export default function ATCSimulator() {
           </div>
         </div>
       )}
+
+      {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
     </div>
   );
 }

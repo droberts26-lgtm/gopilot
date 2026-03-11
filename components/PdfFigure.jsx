@@ -33,12 +33,11 @@ export default function PdfFigure({ pageNumber, figureNumbers, note }) {
   const baseWidth    = typeof window !== 'undefined' ? Math.min(window.innerWidth - 80, 680) : 640;
   const displayWidth = Math.round(baseWidth * zoom);
 
-  // Container height hint:
-  // - Not rotated: portrait height ≈ width × ASPECT
-  // - Rotated 90/270: the landscape image's visual height ≈ original width
-  const containerMinHeight = isRotated
-    ? Math.round(displayWidth / ASPECT)
-    : Math.round(displayWidth * ASPECT);
+  // Bounding box of the image after rotation:
+  // - Not rotated (0°/180°): portrait  → displayWidth wide, displayWidth×ASPECT tall
+  // - Rotated (90°/270°):   landscape → displayWidth×ASPECT wide, displayWidth tall
+  const rotatedBoxW = isRotated ? Math.round(displayWidth * ASPECT) : displayWidth;
+  const rotatedBoxH = isRotated ? displayWidth : Math.round(displayWidth * ASPECT);
 
   return (
     <div style={{
@@ -129,7 +128,7 @@ export default function PdfFigure({ pageNumber, figureNumbers, note }) {
                 </div>
               )}
 
-              {/* Scrollable image wrapper */}
+              {/* Scrollable outer wrapper */}
               <div style={{
                 background: '#fff',
                 borderRadius: 6,
@@ -137,44 +136,52 @@ export default function PdfFigure({ pageNumber, figureNumbers, note }) {
                 display: 'flex',
                 alignItems: 'flex-start',
                 justifyContent: 'center',
-                minHeight: containerMinHeight,
               }}>
-                {/* Loading skeleton shown until image fully decodes */}
-                {!loadedSet[pg] && (
-                  <div style={{
-                    position: 'absolute',
-                    padding: '24px 16px',
-                    color: '#92400e',
-                    fontFamily: 'monospace',
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    animation: 'pulse 1.4s ease infinite',
-                  }}>
-                    Loading figure…
-                  </div>
-                )}
+                {/* Rotation bounding-box: reserves exactly the right width × height
+                    for the image after rotation so nothing gets clipped. */}
+                <div style={{
+                  position: 'relative',
+                  width: rotatedBoxW,
+                  height: rotatedBoxH,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                }}>
+                  {/* Loading skeleton */}
+                  {!loadedSet[pg] && (
+                    <div style={{
+                      position: 'absolute',
+                      color: '#92400e',
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      letterSpacing: 1,
+                      animation: 'pulse 1.4s ease infinite',
+                    }}>
+                      Loading figure…
+                    </div>
+                  )}
 
-                <img
-                  src={`/figures/page-${pg}.jpg`}
-                  alt={pages.length > 1 ? `Figure ${figNums[idx]}` : figLabel}
-                  draggable={false}
-                  loading="eager"
-                  decoding="async"
-                  onLoad={() => setLoadedSet(s => ({ ...s, [pg]: true }))}
-                  style={{
-                    display: 'block',
-                    // When rotated 90/270 the visible width equals the image's rendered height.
-                    // Set image CSS width so that the visual span = displayWidth:
-                    //   visual_width_when_rotated = css_width × ASPECT  →  css_width = displayWidth / ASPECT
-                    width: isRotated ? Math.round(displayWidth / ASPECT) : displayWidth,
-                    height: 'auto',
-                    transform: rotation !== 0 ? `rotate(${rotation}deg)` : 'none',
-                    transformOrigin: 'center top',
-                    flexShrink: 0,
-                    opacity: loadedSet[pg] ? 1 : 0,
-                    transition: 'opacity 0.2s ease',
-                  }}
-                />
+                  <img
+                    src={`/figures/page-${pg}.jpg`}
+                    alt={pages.length > 1 ? `Figure ${figNums[idx]}` : figLabel}
+                    draggable={false}
+                    loading="eager"
+                    decoding="async"
+                    onLoad={() => setLoadedSet(s => ({ ...s, [pg]: true }))}
+                    style={{
+                      display: 'block',
+                      width: displayWidth,
+                      height: 'auto',
+                      transform: rotation !== 0 ? `rotate(${rotation}deg)` : 'none',
+                      transformOrigin: 'center center',
+                      flexShrink: 0,
+                      opacity: loadedSet[pg] ? 1 : 0,
+                      transition: 'opacity 0.2s ease',
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ))}

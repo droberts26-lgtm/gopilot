@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "kill $(lsof -ti :3000) 2>/dev/null; next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -18,7 +18,8 @@
     "next-auth": "^4.24.13",
     "react": "^18",
     "react-dom": "^18",
-    "react-pdf": "^7.7.3"
+    "react-pdf": "^7.7.3",
+    "stripe": "^20.4.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",

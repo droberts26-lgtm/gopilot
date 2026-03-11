@@ -101,10 +101,10 @@ describe('buildSession', () => {
     });
   });
 
-  it('each question retains options in their original A/B/C order', () => {
+  it('each question has all original options present (shuffled order)', () => {
     const session = buildSession(bank, 3);
     session.forEach(q => {
-      expect(q.options.map(o => o.letter)).toEqual(['A', 'B', 'C']);
+      expect(q.options.map(o => o.letter).sort()).toEqual(['A', 'B', 'C']);
     });
   });
 

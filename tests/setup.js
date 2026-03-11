@@ -13,6 +13,11 @@ vi.mock('@/hooks/useProgressSync', () => ({
   useProgressSync: vi.fn(),
 }));
 
+// Mock the pro hook so tests don't make real API calls.
+vi.mock('@/hooks/usePro', () => ({
+  usePro: vi.fn(() => ({ pro: true, loading: false })),
+}));
+
 // Mock next/dynamic so dynamic imports resolve synchronously in tests.
 // Components that use dynamic() will render their fallback unless we mock them.
 vi.mock('next/dynamic', () => ({

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
 import { useProgressSync } from '@/hooks/useProgressSync';
-import { isPro } from '@/lib/pro';
+import { usePro } from '@/hooks/usePro';
 
 const ATCSimulator    = dynamic(() => import('@/components/ATCSimulator'),    { ssr: false });
 const AirmanKnowledge = dynamic(() => import('@/components/AirmanKnowledge'), { ssr: false });
@@ -49,7 +49,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('atc');
   // Guests see the splash screen; signed-in users go straight to the app
   const [showSplash, setShowSplash] = useState(!session);
-  const pro = isPro(session);
+  const { pro } = usePro();
 
   useProgressSync();
 

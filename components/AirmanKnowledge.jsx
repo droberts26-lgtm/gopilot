@@ -27,7 +27,7 @@ function formatTimer(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-export default function AirmanKnowledge({ pro = false }) {
+export default function AirmanKnowledge({ pro = false, proLoading = false }) {
   const [screen,        setScreen]        = useState('menu'); // menu | quiz | result | learn | match
   const [showProModal,  setShowProModal]  = useState(false);
   const [questions,     setQuestions]     = useState([]);
@@ -247,8 +247,9 @@ export default function AirmanKnowledge({ pro = false }) {
               proOnly: true,
             },
           ].map(opt => {
-            const locked = opt.proOnly && !pro;
+            const locked = opt.proOnly && !pro && !proLoading;
             const handleClick = () => {
+              if (proLoading) return;
               if (locked) { setShowProModal(true); return; }
               if (opt.key === 'learn') { setScreen('learn'); return; }
               if (opt.key === 'match') { setScreen('match'); return; }
@@ -307,7 +308,7 @@ export default function AirmanKnowledge({ pro = false }) {
 
         {/* FAA Exam Timer toggle */}
         <div
-          onClick={() => pro ? setTimerEnabled(t => !t) : setShowProModal(true)}
+          onClick={() => proLoading ? null : (pro ? setTimerEnabled(t => !t) : setShowProModal(true))}
           style={{
             marginTop: 14, padding: '12px 18px',
             background: timerEnabled ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.01)',

@@ -11,7 +11,7 @@ import ProModal from '@/components/ProModal';
 
 const QUESTIONS_PER_SESSION = 10;
 
-export default function ATCSimulator({ pro = false }) {
+export default function ATCSimulator({ pro = false, proLoading = false }) {
   const [screen,        setScreen]        = useState('menu');
   const [showProModal,  setShowProModal]  = useState(false);
   const [level,         setLevel]         = useState(null);
@@ -189,11 +189,11 @@ export default function ATCSimulator({ pro = false }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {Object.entries(levelInfo).map(([key, val]) => {
-              const locked = !pro && key !== 'student';
+              const locked = !pro && !proLoading && key !== 'student';
               return (
                 <button
                   key={key}
-                  onClick={() => locked ? setShowProModal(true) : startLevel(key)}
+                  onClick={() => locked ? setShowProModal(true) : (proLoading ? null : startLevel(key))}
                   style={{
                     background: 'rgba(255,255,255,0.017)',
                     border: `1px solid ${val.color}28`,

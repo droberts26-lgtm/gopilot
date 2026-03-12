@@ -49,7 +49,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('atc');
   // Guests see the splash screen; signed-in users go straight to the app
   const [showSplash, setShowSplash] = useState(!session);
-  const { pro } = usePro();
+  const { pro, loading: proLoading } = usePro();
 
   useProgressSync();
 
@@ -229,8 +229,8 @@ export default function HomePage() {
 
       {/* ── Main Content ── */}
       <main style={{ position: 'relative', zIndex: 1 }}>
-        {activeTab === 'atc'       && <ATCSimulator pro={pro} />}
-        {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} />}
+        {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
+        {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} proLoading={proLoading} />}
         {activeTab === 'basics'    && <AviationBasics />}
         {activeTab === 'videos'    && <VideoLibrary />}
       </main>

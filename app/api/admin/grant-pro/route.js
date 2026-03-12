@@ -1,14 +1,7 @@
-import { Redis } from '@upstash/redis';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { isPro, proEmailKey } from '@/lib/pro';
-
-function getRedis() {
-  const url   = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-  return new Redis({ url, token });
-}
+import { isPro } from '@/lib/pro';
+import { getSupabase } from '@/lib/supabase';
 
 // POST /api/admin/grant-pro  { email: "user@example.com" }
 // Only accessible to accounts in the Pro email bypass list (owner accounts).
@@ -23,11 +16,23 @@ export async function POST(request) {
     return Response.json({ error: 'email is required' }, { status: 400 });
   }
 
-  const redis = getRedis();
-  if (!redis) {
-    return Response.json({ error: 'Redis not configured' }, { status: 503 });
+  const supabase = getSupabase();
+  if (!supabase) {
+    return Response.json({ error: 'Database not configured' }, { status: 503 });
   }
 
-  await redis.set(proEmailKey(email.toLowerCase().trim()), true);
-  return Response.json({ ok: true, granted: email.toLowerCase().trim() });
+  const normalised = email.toLowerCase().trim();
+
+  const { error } = await supabase
+    .from('pro_users')
+    .upsert(
+      { email: normalised, source: 'admin', granted_at: new Date().toISOString() },
+      { onConflict: 'email' }
+    );
+
+  if (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+
+  return Response.json({ ok: true, granted: normalised });
 }

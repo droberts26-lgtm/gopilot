@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isPro, proKey } from '@/lib/pro';
+import { isPro, proKey, proEmailKey } from '@/lib/pro';
 
 describe('isPro', () => {
   it('returns false for null session', () => {
@@ -30,5 +30,15 @@ describe('isPro', () => {
 describe('proKey', () => {
   it('returns the correct Redis key for a user id', () => {
     expect(proKey('uid123')).toBe('user:uid123:pro');
+  });
+});
+
+describe('proEmailKey', () => {
+  it('returns the correct Redis key for an email', () => {
+    expect(proEmailKey('user@example.com')).toBe('email:user@example.com:pro');
+  });
+
+  it('lowercases the email', () => {
+    expect(proEmailKey('User@Example.COM')).toBe('email:user@example.com:pro');
   });
 });

@@ -73,6 +73,8 @@ export default function ProModal({ onClose }) {
           width: '100%',
           fontFamily: "'Courier New', monospace",
           boxShadow: '0 0 40px rgba(0,255,136,0.06)',
+          maxHeight: 'calc(100vh - 40px)',
+          overflowY: 'auto',
         }}
       >
         {session ? (

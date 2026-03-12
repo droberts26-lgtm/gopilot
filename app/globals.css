@@ -69,6 +69,28 @@ body {
   background: #2a4060;
 }
 
+/* ── Mobile header: hide status lights on small screens ── */
+@media (max-width: 500px) {
+  .status-lights {
+    display: none !important;
+  }
+}
+
+/* ── Tab bar scroll hint: fade-out on right edge ── */
+.tab-bar-wrapper {
+  position: relative;
+}
+.tab-bar-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, rgba(7,11,18,0.95));
+  pointer-events: none;
+}
+
 /* ── react-pdf overrides ── */
 .react-pdf__Page__canvas {
   max-width: 100% !important;

@@ -180,6 +180,68 @@ export const scenarios = {
       ],
       explanation: "When ATC suggests an alternative route with an altitude restriction, read back the route AND the altitude limit. 'Wilco' alone doesn't confirm you understood the 1,500 foot restriction. Option D is vague — 'clear of Class C' doesn't confirm you accepted the specific coastal routing.",
     },
+
+    // ── Approach & Landing scenarios (s16–s20) ───────────────────────────────
+    {
+      id: "s16",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, Socal Approach, descend and maintain 3,000, expect the ILS runway 24 left.",
+      situation: "You're on a VFR flight following and ATC is transitioning you for an instrument approach into Los Angeles.",
+      options: [
+        { text: "Descend and maintain 3,000, Cessna 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 3,000 and ILS 24L, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Descending to 3,000, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "3,000, expect ILS 24L, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Altitude clearances require standard phraseology: 'descend and maintain [altitude].' 'Expect the ILS 24L' is informational — you do not need to read it back. 'Roger, 3,000 and ILS 24L' (B) reads back the advisory unnecessarily. 'Descending to' (C) omits 'maintain,' which is required.",
+    },
+    {
+      id: "s17",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, Riverside Tower, runway 27 cleared to land.",
+      situation: "You're on final approach to Riverside Airport (KRAL) after a cross-country flight.",
+      options: [
+        { text: "Cleared to land runway 27, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, cleared to land, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Cleared to land, runway 27, wilco, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "On final, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Landing clearances are mandatory readback items. You must confirm the specific runway number and the phrase 'cleared to land.' Option B omits the runway — you must always read back the runway to confirm you're landing on the correct one.",
+    },
+    {
+      id: "s18",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, continue approach, number two, traffic is a Piper Cherokee on a 2 mile final.",
+      situation: "You're flying a practice approach and tower is sequencing you behind another aircraft.",
+      options: [
+        { text: "Continuing approach, traffic in sight, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Continue approach, number two, looking for traffic, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, cleared to land number two, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "If you don't have the traffic in sight, say 'looking for traffic' — not 'traffic in sight' (that would be false). You haven't been cleared to land yet, so you cannot say 'cleared to land' in your readback. Acknowledge your sequence position (number two) to confirm you understand the separation.",
+    },
+    {
+      id: "s19",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, go around, I say again, go around. Traffic on the runway.",
+      situation: "You're about to touch down on runway 9 right when tower issues an urgent instruction.",
+      options: [
+        { text: "Going around, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, going around, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Go around acknowledged, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "Go-around instructions are safety-critical. The correct readback is 'going around' (present continuous) to confirm you are actively executing the maneuver right now. While 'Roger' (B) is close, 'going around' alone is preferred because it emphasizes immediate action. 'Wilco' (C) does not confirm you heard the specific instruction.",
+    },
+    {
+      id: "s20",
+      atcMessage: "Cessna 7-2-3-Tango-Foxtrot, after landing, exit at Bravo, contact Ground 121.9.",
+      situation: "You've just touched down and are rolling out on runway 27 after a successful cross-country.",
+      options: [
+        { text: "Exit at Bravo, Ground 121.9, 7-2-3-Tango-Foxtrot.", correct: true },
+        { text: "Roger, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Wilco, exiting, 7-2-3-Tango-Foxtrot.", correct: false },
+        { text: "Ground 121.9, 7-2-3-Tango-Foxtrot.", correct: false },
+      ],
+      explanation: "After landing, you must read back both the exit taxiway (Bravo) AND the ground frequency (121.9). Knowing where to exit and which frequency to contact next are both important for safe runway management. Option D omits the taxiway — you must confirm exactly where you'll leave the runway.",
+    },
   ],
 
   general: [
@@ -548,6 +610,7 @@ export const scenarios = {
     },
   ],
 };
+
 
 export const levelInfo = {
   student: {

@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { parQuestions, figurePdfPages } from '@/data/parQuestions';
 import { buildSession, calculatePct, isPassing, getPerformanceBadge } from '@/lib/quiz';
-import { groupByAcsArea } from '@/lib/acsAreas';
+import { groupByAcsArea, getAcsArea } from '@/lib/acsAreas';
+import {
+  saveQuizResult, loadQuizHistory,
+  saveQuizSession, loadQuizSession, clearQuizSession,
+} from '@/lib/quizHistory';
 import LearnMode from './LearnMode';
 import MatchingMode from './MatchingMode';
 import ProModal from './ProModal';
@@ -37,6 +41,9 @@ export default function AirmanKnowledge({ pro = false }) {
   const [timerEnabled,  setTimerEnabled]  = useState(false);
   const [secondsLeft,   setSecondsLeft]   = useState(0);
   const [searchQuery,   setSearchQuery]   = useState('');
+  const [reportedIds,   setReportedIds]   = useState(new Set()); // question IDs reported as issues
+  const [resumeOffer,   setResumeOffer]   = useState(() => loadQuizSession());
+  const [quizHistory]                     = useState(() => loadQuizHistory());
 
   // ── Computed: filtered question bank ──────────────────────────────────
   const filteredQuestions = searchQuery.trim()
@@ -77,10 +84,13 @@ export default function AirmanKnowledge({ pro = false }) {
 
   // ── Quiz control ───────────────────────────────────────────────────────
   const startQuiz = (m, questionBank = null) => {
+    clearQuizSession();
+    setResumeOffer(null);
     setMode(m);
     const bank = questionBank ?? (searchQuery.trim() ? filteredQuestions : parQuestions);
     const sessionSize = m === 'practice' ? Math.min(10, bank.length) : bank.length;
-    setQuestions(buildSession(bank, sessionSize));
+    const qs = buildSession(bank, sessionSize);
+    setQuestions(qs);
     setCurrentIdx(0);
     setSelected(null);
     setScore(0);
@@ -93,22 +103,45 @@ export default function AirmanKnowledge({ pro = false }) {
     setScreen('quiz');
   };
 
+  const handleResume = () => {
+    if (!resumeOffer) return;
+    const { mode: savedMode, questions: savedQs, currentIdx: savedIdx, score: savedScore, wrong: savedWrong, quizResults: savedResults } = resumeOffer;
+    setMode(savedMode);
+    setQuestions(savedQs);
+    setCurrentIdx(savedIdx);
+    setScore(savedScore);
+    setWrong(savedWrong || []);
+    setQuizResults(savedResults || []);
+    setSelected(null);
+    setShowExp(false);
+    setResumeOffer(null);
+    setScreen('quiz');
+  };
+
   const handleSelect = (optionIndex) => {
     if (selected !== null) return;
     setSelected(optionIndex);
     const q = questions[currentIdx];
     const isCorrect = q.options[optionIndex].correct;
-    if (isCorrect) {
-      setScore(s => s + 1);
-    } else {
-      setWrong(w => [...w, q.id]);
-    }
-    setQuizResults(r => [...r, { id: q.id, acsCode: q.acsCode, correct: isCorrect }]);
+
+    const newScore = isCorrect ? score + 1 : score;
+    const newWrong = isCorrect ? wrong : [...wrong, q.id];
+    const newResults = [...quizResults, { id: q.id, acsCode: q.acsCode, correct: isCorrect }];
+
+    if (isCorrect) { setScore(newScore); } else { setWrong(newWrong); }
+    setQuizResults(newResults);
     setShowExp(true);
+
+    // Autosave full test progress (not practice — it's only 10 questions)
+    if (mode === 'full') {
+      saveQuizSession(mode, questions, currentIdx + 1, newScore, newWrong, newResults);
+    }
   };
 
   const next = () => {
     if (currentIdx + 1 >= questions.length) {
+      clearQuizSession();
+      saveQuizResult(mode, score, questions.length);
       setScreen('result');
       return;
     }
@@ -137,6 +170,46 @@ export default function AirmanKnowledge({ pro = false }) {
             Wrong answers include a full explanation.
           </p>
         </div>
+
+        {/* Resume banner for interrupted full test */}
+        {resumeOffer && (
+          <div style={{
+            background: 'rgba(245,158,11,0.06)',
+            border: '1px solid rgba(245,158,11,0.25)',
+            borderRadius: 9, padding: '12px 16px', marginBottom: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flexWrap: 'wrap', gap: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 8.5, letterSpacing: 2, color: '#f59e0b', marginBottom: 3 }}>RESUME FULL TEST</div>
+              <div style={{ fontSize: 11.5, color: '#8a7a4a' }}>
+                Q{resumeOffer.currentIdx + 1}/{resumeOffer.questions?.length ?? 131} · {resumeOffer.score} correct so far
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={handleResume}
+                style={{
+                  background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)',
+                  color: '#f59e0b', padding: '7px 16px', borderRadius: 5, cursor: 'pointer',
+                  fontFamily: "'Courier New',monospace", fontSize: 11, letterSpacing: 1,
+                }}
+              >
+                RESUME →
+              </button>
+              <button
+                onClick={() => { clearQuizSession(); setResumeOffer(null); }}
+                style={{
+                  background: 'none', border: '1px solid #1a2436', color: '#5a7a94',
+                  padding: '7px 12px', borderRadius: 5, cursor: 'pointer',
+                  fontFamily: "'Courier New',monospace", fontSize: 11,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Mode buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -318,6 +391,28 @@ export default function AirmanKnowledge({ pro = false }) {
           )}
         </div>
 
+        {/* Recent score history */}
+        {quizHistory.length > 0 && (
+          <div style={{
+            marginTop: 18, padding: '14px 18px',
+            background: 'rgba(255,255,255,0.012)', border: '1px solid #0f1d2c', borderRadius: 9,
+          }}>
+            <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 10 }}>RECENT SESSIONS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {quizHistory.slice(0, 5).map((h, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, color: '#f59e0b', letterSpacing: 0.5 }}>
+                    {h.mode === 'full' ? 'Full Test' : 'Quick Practice'}
+                  </span>
+                  <span style={{ fontSize: 11, fontFamily: "'Courier New',monospace", color: h.pct >= 70 ? '#00ff88' : '#ef4444' }}>
+                    {h.score}/{h.total} — {h.pct}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ textAlign: 'center', marginTop: 28, fontSize: 10, color: '#2a4464', letterSpacing: 3 }}>
           FAA-CT-8080-2H SUPPLEMENT · PRIVATE PILOT ACS
         </div>
@@ -479,9 +574,29 @@ export default function AirmanKnowledge({ pro = false }) {
               ? 'rgba(0,255,136,0.15)' : 'rgba(239,68,68,0.15)'}`,
             borderRadius: 8, padding: '14px 17px', marginTop: 4, marginBottom: 20, animation: 'popIn 0.22s ease',
           }}>
-            <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 8 }}>
-              {selected !== null && questions[currentIdx].options[selected].correct ? '✓ WELL DONE — ' : '✗ EXPLANATION — '}
-              WHY THIS ANSWER:
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84' }}>
+                {selected !== null && questions[currentIdx].options[selected].correct ? '✓ WELL DONE — ' : '✗ EXPLANATION — '}
+                WHY THIS ANSWER:
+              </div>
+              <button
+                onClick={() => {
+                  const text = `Q${q.id} (${q.acsCode}): ${q.question}`;
+                  navigator.clipboard.writeText(text).catch(() => {});
+                  setReportedIds(prev => new Set([...prev, q.id]));
+                }}
+                style={{
+                  background: 'none',
+                  border: `1px solid ${reportedIds.has(q.id) ? '#4a6a84' : '#1a2436'}`,
+                  borderRadius: 4, color: reportedIds.has(q.id) ? '#4a6a84' : '#3a5870',
+                  padding: '3px 8px', cursor: 'pointer',
+                  fontFamily: "'Courier New',monospace", fontSize: 8, letterSpacing: 1,
+                  flexShrink: 0, marginLeft: 8,
+                }}
+                title="Copy question ID to clipboard to report an issue"
+              >
+                {reportedIds.has(q.id) ? '✓ COPIED' : '⚑ REPORT'}
+              </button>
             </div>
             <p style={{ margin: 0, fontSize: 12.5, color: '#7a9ab4', lineHeight: 1.76 }}>
               {q.explanation}
@@ -564,7 +679,7 @@ export default function AirmanKnowledge({ pro = false }) {
         {/* ACS weak-area breakdown (full test only) */}
         {acsBreakdown && acsBreakdown.length > 0 && (
           <div style={{
-            padding: '16px 20px', borderRadius: 10, marginBottom: 24, textAlign: 'left',
+            padding: '16px 20px', borderRadius: 10, marginBottom: 12, textAlign: 'left',
             background: 'rgba(255,255,255,0.012)', border: '1px solid #0f1d2c',
           }}>
             <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#5a7a94', marginBottom: 14 }}>
@@ -590,6 +705,28 @@ export default function AirmanKnowledge({ pro = false }) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Drill weakest area button */}
+        {acsBreakdown && acsBreakdown.length > 0 && acsBreakdown[0].pct < 100 && (
+          <div style={{ marginBottom: 24 }}>
+            <button
+              onClick={() => {
+                const weakest = acsBreakdown[0];
+                const weakQs = parQuestions.filter(q => getAcsArea(q.acsCode) === weakest.area);
+                startQuiz('practice', weakQs);
+              }}
+              style={{
+                width: '100%', padding: '10px 16px',
+                background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.25)',
+                borderRadius: 7, cursor: 'pointer',
+                color: '#ef4444', fontFamily: "'Courier New',monospace",
+                fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center',
+              }}
+            >
+              DRILL WEAKEST AREA: {acsBreakdown[0].name.toUpperCase()} ({acsBreakdown[0].pct}%)
+            </button>
           </div>
         )}
 

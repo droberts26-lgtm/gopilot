@@ -1,25 +1,39 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { scenarios, levelInfo } from '@/data/atcScenarios';
 import { buildSession } from '@/lib/quiz';
+import {
+  saveAtcResult, loadAtcHistory,
+  saveAtcSession, loadAtcSession, clearAtcSession,
+} from '@/lib/quizHistory';
 import ProModal from '@/components/ProModal';
 
 const QUESTIONS_PER_SESSION = 10;
 
 export default function ATCSimulator({ pro = false }) {
-  const [screen, setScreen]       = useState('menu');
-  const [showProModal, setShowProModal] = useState(false);
-  const [level, setLevel]         = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [selected, setSelected]   = useState(null);
-  const [streak, setStreak]       = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [score, setScore]         = useState(0);
-  const [showExp, setShowExp]     = useState(false);
-  const [radioStatic, setRadioStatic] = useState(false);
+  const [screen,        setScreen]        = useState('menu');
+  const [showProModal,  setShowProModal]  = useState(false);
+  const [level,         setLevel]         = useState(null);
+  const [questions,     setQuestions]     = useState([]);
+  const [currentIdx,    setCurrentIdx]    = useState(0);
+  const [selected,      setSelected]      = useState(null);
+  const [streak,        setStreak]        = useState(0);
+  const [bestStreak,    setBestStreak]    = useState(0);
+  const [score,         setScore]         = useState(0);
+  const [showExp,       setShowExp]       = useState(false);
+  const [radioStatic,   setRadioStatic]   = useState(false);
+  const [results,       setResults]       = useState([]); // per-question outcomes
+  const [showTranscript,setShowTranscript]= useState(false);
+  const [resumeOffer,   setResumeOffer]   = useState(null); // saved session to resume
+  const [atcHistory]                      = useState(() => loadAtcHistory());
   const audioCtx = useRef(null);
+
+  // Check for a saved session on mount
+  useEffect(() => {
+    const saved = loadAtcSession();
+    if (saved) setResumeOffer(saved);
+  }, []);
 
   const playStatic = () => {
     try {
@@ -39,10 +53,30 @@ export default function ATCSimulator({ pro = false }) {
   };
 
   const startLevel = (lvl) => {
+    clearAtcSession();
+    setResumeOffer(null);
     setLevel(lvl);
-    setQuestions(buildSession(scenarios[lvl], QUESTIONS_PER_SESSION));
+    const qs = buildSession(scenarios[lvl], QUESTIONS_PER_SESSION);
+    setQuestions(qs);
     setCurrentIdx(0); setSelected(null); setShowExp(false);
-    setStreak(0); setScore(0); setScreen('sim');
+    setStreak(0); setScore(0); setResults([]); setShowTranscript(false);
+    setScreen('sim');
+    setRadioStatic(true); playStatic();
+    setTimeout(() => setRadioStatic(false), 320);
+  };
+
+  const handleResume = () => {
+    if (!resumeOffer) return;
+    const { level: savedLevel, questions: savedQs, currentIdx: savedIdx, score: savedScore, results: savedResults } = resumeOffer;
+    setLevel(savedLevel);
+    setQuestions(savedQs);
+    setCurrentIdx(savedIdx);
+    setScore(savedScore);
+    setResults(savedResults || []);
+    setSelected(null); setShowExp(false);
+    setStreak(0); setShowTranscript(false);
+    setScreen('sim');
+    setResumeOffer(null);
     setRadioStatic(true); playStatic();
     setTimeout(() => setRadioStatic(false), 320);
   };
@@ -50,16 +84,43 @@ export default function ATCSimulator({ pro = false }) {
   const handleSelect = (i) => {
     if (selected !== null) return;
     setSelected(i);
-    const isCorrect = questions[currentIdx].options[i].correct;
+    const q = questions[currentIdx];
+    const isCorrect = q.options[i].correct;
+
+    let newScore = score;
+    let newStreak = streak;
     if (isCorrect) {
-      const ns = streak + 1;
-      setStreak(ns); setBestStreak(p => Math.max(p, ns)); setScore(s => s + 1);
-    } else { setStreak(0); }
+      newStreak = streak + 1;
+      setStreak(newStreak); setBestStreak(p => Math.max(p, newStreak));
+      newScore = score + 1;
+      setScore(newScore);
+    } else {
+      setStreak(0);
+    }
     setShowExp(true);
+
+    // Record result for transcript & feedback
+    const correctOpt = q.options.find(o => o.correct);
+    const newResult = {
+      atcMessage:   q.atcMessage,
+      selectedText: q.options[i].text,
+      correctText:  correctOpt?.text ?? '',
+      correct:      isCorrect,
+    };
+    const newResults = [...results, newResult];
+    setResults(newResults);
+
+    // Autosave: resume at next question
+    saveAtcSession(level, questions, currentIdx + 1, newScore, newResults);
   };
 
   const next = () => {
-    if (currentIdx + 1 >= questions.length) { setScreen('result'); return; }
+    if (currentIdx + 1 >= questions.length) {
+      clearAtcSession();
+      saveAtcResult(level, score, questions.length);
+      setScreen('result');
+      return;
+    }
     setCurrentIdx(i => i + 1); setSelected(null); setShowExp(false);
     setRadioStatic(true); playStatic();
     setTimeout(() => setRadioStatic(false), 320);
@@ -85,6 +146,46 @@ export default function ATCSimulator({ pro = false }) {
               <strong style={{ color: '#7a9ab4' }}>{totalQ}</strong> unique scenarios. Choose your best readback.
             </p>
           </div>
+
+          {/* Resume banner */}
+          {resumeOffer && (
+            <div style={{
+              background: 'rgba(56,189,248,0.06)',
+              border: '1px solid rgba(56,189,248,0.25)',
+              borderRadius: 9, padding: '12px 16px', marginBottom: 20,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: 10,
+            }}>
+              <div>
+                <div style={{ fontSize: 8.5, letterSpacing: 2, color: '#38bdf8', marginBottom: 3 }}>RESUME SESSION</div>
+                <div style={{ fontSize: 11.5, color: '#7a9ab4' }}>
+                  {levelInfo[resumeOffer.level]?.label} · Q{resumeOffer.currentIdx + 1}/10 · {resumeOffer.score} correct
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={handleResume}
+                  style={{
+                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.35)',
+                    color: '#38bdf8', padding: '7px 16px', borderRadius: 5, cursor: 'pointer',
+                    fontFamily: "'Courier New',monospace", fontSize: 11, letterSpacing: 1,
+                  }}
+                >
+                  RESUME →
+                </button>
+                <button
+                  onClick={() => { clearAtcSession(); setResumeOffer(null); }}
+                  style={{
+                    background: 'none', border: '1px solid #1a2436', color: '#5a7a94',
+                    padding: '7px 12px', borderRadius: 5, cursor: 'pointer',
+                    fontFamily: "'Courier New',monospace", fontSize: 11,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {Object.entries(levelInfo).map(([key, val]) => {
@@ -141,6 +242,28 @@ export default function ATCSimulator({ pro = false }) {
               );
             })}
           </div>
+
+          {/* Recent score history */}
+          {atcHistory.length > 0 && (
+            <div style={{
+              marginTop: 24, padding: '14px 18px',
+              background: 'rgba(255,255,255,0.012)', border: '1px solid #0f1d2c', borderRadius: 9,
+            }}>
+              <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 10 }}>RECENT SESSIONS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {atcHistory.slice(0, 5).map((h, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 10, color: levelInfo[h.level]?.color ?? '#7a9ab4', letterSpacing: 0.5 }}>
+                      {levelInfo[h.level]?.label ?? h.level}
+                    </span>
+                    <span style={{ fontSize: 11, fontFamily: "'Courier New',monospace", color: h.pct >= 70 ? '#00ff88' : '#ef4444' }}>
+                      {h.score}/{h.total} — {h.pct}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={{ textAlign: 'center', marginTop: 40, fontSize: 10, color: '#2a4464', letterSpacing: 3 }}>
             PHRASEOLOGY · FAA AIM & ORDER 7110.65
@@ -256,12 +379,34 @@ export default function ATCSimulator({ pro = false }) {
             );
           })}
 
-          {/* Explanation */}
+          {/* Explanation + feedback specificity */}
           {showExp && (
             <div style={{
               background: 'rgba(255,255,255,0.014)', border: '1px solid #111c2a', borderRadius: 8,
               padding: '13px 16px', marginTop: 2, marginBottom: 18, animation: 'popIn 0.22s ease',
             }}>
+              {/* Feedback specificity: show what was said vs what was correct */}
+              {selected !== null && !q.options[selected].correct && (
+                <div style={{
+                  background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)',
+                  borderRadius: 6, padding: '10px 13px', marginBottom: 10,
+                }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 7.5, letterSpacing: 2, color: '#ef4444', marginBottom: 4 }}>YOUR READBACK</div>
+                      <div style={{ fontSize: 11, color: '#ef444499', lineHeight: 1.5 }}>
+                        "{q.options[selected].text}"
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 7.5, letterSpacing: 2, color: '#00ff88', marginBottom: 4 }}>CORRECT READBACK</div>
+                      <div style={{ fontSize: 11, color: '#00ff8899', lineHeight: 1.5 }}>
+                        "{q.options.find(o => o.correct)?.text}"
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 6 }}>INSTRUCTOR NOTE</div>
               <p style={{ margin: 0, fontSize: 12.5, color: '#7090aa', lineHeight: 1.76 }}>{q.explanation}</p>
             </div>
@@ -288,7 +433,7 @@ export default function ATCSimulator({ pro = false }) {
 
       {/* RESULTS */}
       {screen === 'result' && (
-        <div style={{ maxWidth: 540, margin: '0 auto', padding: '58px 22px', textAlign: 'center', animation: 'fadeSlide 0.4s ease' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '58px 22px', textAlign: 'center', animation: 'fadeSlide 0.4s ease' }}>
           <div style={{ fontSize: 9, letterSpacing: 5, color: '#4a6a84', marginBottom: 18 }}>SESSION COMPLETE</div>
           <div style={{ fontSize: 58, marginBottom: 10 }}>
             {pct >= 90 ? '🏆' : pct >= 70 ? '📻' : pct >= 50 ? '📖' : '🔁'}
@@ -314,6 +459,58 @@ export default function ATCSimulator({ pro = false }) {
               <div style={{ fontSize: 30, fontWeight: 900, color: info.color }}>{Math.round(pct)}%</div>
             </div>
           </div>
+
+          {/* Session transcript */}
+          {results.length > 0 && (
+            <div style={{ marginBottom: 20, textAlign: 'left' }}>
+              <button
+                onClick={() => setShowTranscript(v => !v)}
+                style={{
+                  background: showTranscript ? 'rgba(56,189,248,0.06)' : 'none',
+                  border: '1px solid #1a2436', borderRadius: 6, color: '#5a7a94',
+                  padding: '8px 16px', cursor: 'pointer', fontFamily: "'Courier New',monospace",
+                  fontSize: 10, letterSpacing: 1.5, width: '100%', textAlign: 'left',
+                }}
+              >
+                {showTranscript ? '▲ HIDE SESSION LOG' : '▼ SESSION LOG'}
+              </button>
+              {showTranscript && (
+                <div style={{
+                  marginTop: 4, border: '1px solid #0f1d2c', borderRadius: 6,
+                  overflow: 'hidden',
+                }}>
+                  {results.map((r, i) => (
+                    <div key={i} style={{
+                      padding: '10px 14px',
+                      borderBottom: i < results.length - 1 ? '1px solid #0f1d2c' : 'none',
+                      background: r.correct ? 'rgba(0,255,136,0.02)' : 'rgba(239,68,68,0.02)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: r.correct ? 0 : 6 }}>
+                        <span style={{ fontSize: 11, color: r.correct ? '#00ff88' : '#ef4444', flexShrink: 0 }}>
+                          {r.correct ? '✓' : '✗'}
+                        </span>
+                        <span style={{ fontSize: 10.5, color: '#5a7a94', lineHeight: 1.45 }}>
+                          "{r.atcMessage.length > 70 ? r.atcMessage.slice(0, 70) + '…' : r.atcMessage}"
+                        </span>
+                      </div>
+                      {!r.correct && (
+                        <div style={{ marginLeft: 19, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                          <div>
+                            <div style={{ fontSize: 7, letterSpacing: 1.5, color: '#ef4444', marginBottom: 2 }}>YOU SAID</div>
+                            <div style={{ fontSize: 10, color: '#7a4a4a', lineHeight: 1.4 }}>{r.selectedText}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 7, letterSpacing: 1.5, color: '#00ff88', marginBottom: 2 }}>CORRECT</div>
+                            <div style={{ fontSize: 10, color: '#4a7a5a', lineHeight: 1.4 }}>{r.correctText}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button

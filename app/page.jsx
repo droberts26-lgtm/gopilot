@@ -118,18 +118,20 @@ export default function HomePage() {
 
             {/* Status lights + user menu */}
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              {['SYS', 'NAV', 'COM'].map((label, i) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <div style={{
-                    width: 6, height: 6, borderRadius: '50%',
-                    background: ['#00ff88', '#38bdf8', '#f59e0b'][i],
-                    animation: `pulse ${2 + i * 0.5}s ease infinite`,
-                    opacity: 0.8,
-                  }} />
-                  <span style={{ fontSize: 7.5, letterSpacing: 2, color: '#3d5878' }}>{label}</span>
-                </div>
-              ))}
-              <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
+              <div className="status-lights" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                {['SYS', 'NAV', 'COM'].map((label, i) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: ['#00ff88', '#38bdf8', '#f59e0b'][i],
+                      animation: `pulse ${2 + i * 0.5}s ease infinite`,
+                      opacity: 0.8,
+                    }} />
+                    <span style={{ fontSize: 7.5, letterSpacing: 2, color: '#3d5878' }}>{label}</span>
+                  </div>
+                ))}
+                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
+              </div>
               {session
                 ? <UserMenu user={session.user} />
                 : (
@@ -165,6 +167,7 @@ export default function HomePage() {
           </div>
 
           {/* Tab Navigation */}
+          <div className="tab-bar-wrapper">
           <div style={{
             display: 'flex', gap: 0, marginTop: 4,
             overflowX: 'auto', WebkitOverflowScrolling: 'touch',
@@ -201,6 +204,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
+          </div>{/* end tab-bar-wrapper */}
         </div>
       </header>
 

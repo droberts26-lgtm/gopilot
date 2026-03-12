@@ -20,8 +20,8 @@ describe('ATCSimulator', () => {
 
     it('shows the total scenario count', () => {
       render(<ATCSimulator pro={true} />);
-      // 45 scenarios total (15 per level × 3)
-      expect(screen.getByText('45')).toBeInTheDocument();
+      // 50 scenarios total (20 student + 15 general + 15 commercial)
+      expect(screen.getByText('50')).toBeInTheDocument();
     });
   });
 

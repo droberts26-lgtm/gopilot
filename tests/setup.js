@@ -47,6 +47,20 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
 }));
 global.webkitAudioContext = global.AudioContext;
 
+// Mock quiz history so component tests don't read/write localStorage for analytics.
+vi.mock('@/lib/quizHistory', () => ({
+  saveAtcResult:  vi.fn(),
+  loadAtcHistory: vi.fn(() => []),
+  saveQuizResult: vi.fn(),
+  loadQuizHistory: vi.fn(() => []),
+  saveAtcSession:  vi.fn(),
+  loadAtcSession:  vi.fn(() => null),
+  clearAtcSession: vi.fn(),
+  saveQuizSession:  vi.fn(),
+  loadQuizSession:  vi.fn(() => null),
+  clearQuizSession: vi.fn(),
+}));
+
 // Suppress jsdom "Not implemented: window.scrollTo" noise.
 global.scrollTo = vi.fn();
 window.scrollTo = vi.fn();

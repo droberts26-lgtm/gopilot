@@ -667,7 +667,93 @@ Each chart quadrant (bounded by latitude/longitude lines) displays the MEF in la
     ],
   },
 
-  // ── 8. Weather Products ───────────────────────────────────────────────────
+  // ── 8. Pilot Checklists & Acronyms ────────────────────────────────────────
+  {
+    id: 'acronyms',
+    title: 'Pilot Checklists & Acronyms',
+    icon: '📝',
+    color: '#a78bfa',
+    description: 'The memory aids every private pilot must know cold for the FAA written and practical tests.',
+    slides: [
+      {
+        title: 'IMSAFE — Pilot Self-Assessment',
+        body: `Before every flight, the Pilot-in-Command must assess their own fitness. IMSAFE is a go/no-go checklist you run on yourself:
+
+I — Illness: Am I sick or feeling "off"? Even a minor cold impairs decision-making.
+M — Medication: Am I taking any drugs (prescription or OTC) that could affect judgment, vision, or reaction time?
+S — Stress: Am I emotionally or mentally stressed? Personal or professional stress significantly degrades cockpit performance.
+A — Alcohol: Have I had alcohol within 8 hours? FAA minimum is 8 hours "bottle to throttle," but 24 hours is safer. BAC must be < 0.04%.
+F — Fatigue: Am I rested? Sleep deprivation impairs pilots as severely as intoxication.
+E — Emotion: Am I emotionally compromised (anger, grief, anxiety)? Strong emotions degrade situational awareness.
+
+If any letter is a YES, the safest choice may be to not fly.`,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Cockpit_Cessna_172_PD_007.JPG',
+        imageAlt: 'Pilot in the cockpit of a Cessna 172 preparing for flight',
+        imageCaption: 'Self-assessment before every flight is a habit of professional pilots at all experience levels.',
+      },
+      {
+        title: 'PAVE — Risk Assessment Framework',
+        body: `PAVE is the FAA's recommended framework for evaluating risk before and during a flight. Think of each letter as a category of hazards to actively assess:
+
+P — Pilot: What is MY fitness level? Experience, currency, recency, fatigue, IMSAFE.
+A — Aircraft: Is the aircraft airworthy? Recent maintenance, required equipment, fuel state, weight and balance.
+V — enVironment: What are the external hazards? Weather, terrain, airspace, NOTAMs, time of day, runway conditions.
+E — External pressures: Is there pressure to complete the flight at any cost? "Get-there-itis," passenger expectations, schedules — these are among the leading contributors to aviation accidents.
+
+Using PAVE on every flight builds the habit of structured risk thinking that separates safe pilots from statistics.`,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/Weather_preflight.jpg',
+        imageAlt: 'Pilot reviewing weather charts during preflight planning',
+        imageCaption: 'PAVE risk assessment — always evaluate Pilot, Aircraft, enVironment, and External pressures.',
+      },
+      {
+        title: 'CIGAR — Pre-Takeoff Checklist',
+        body: `CIGAR is a memory aid for items to verify just before entering the runway for departure:
+
+C — Controls: Flight controls free and correct? Move the yoke/stick fully — check for correct deflection.
+I — Instruments: Airspeed at zero, altimeter set to field elevation, directional gyro aligned with compass, attitude indicator upright.
+G — Gas: Fuel selector on fullest tank (or BOTH). Fuel quantity sufficient for the flight.
+A — Attitude indicator: Aligned and erect. Suction gauge in the green.
+R — Runup: Engine runup complete? Magnetos checked, carburetor heat tested, oil temp/pressure in green.
+
+CIGAR doesn't replace a manufacturer checklist — it's a final mental sweep to catch anything missed. Always use the POH checklist first.`,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Cessna_172_Instrument_Panel_%28left%29_%28Photo_by_Theo%2C_2006%29.jpg',
+        imageAlt: 'Cessna 172 instrument panel close-up',
+        imageCaption: 'CIGAR — a final pre-takeoff mental check before lining up on the runway.',
+      },
+      {
+        title: 'GUMPS — Pre-Landing Checklist',
+        body: `GUMPS is a standard pre-landing flow check used by pilots of complex (retractable gear) aircraft — and a great habit for all pilots:
+
+G — Gas: Fuel selector on the appropriate tank. Sufficient fuel to land and go-around if needed.
+U — Undercarriage: Landing gear DOWN and locked. This is the critical item — gear-up landings destroy aircraft and careers.
+M — Mixture: Mixture rich for landing (unless at high elevation where leaning may be appropriate).
+P — Propeller: Prop control to full forward (high RPM) — ready for a go-around at full power.
+S — Seatbelts: Seatbelts and shoulder harnesses fastened for all occupants.
+
+Run GUMPS on downwind, base, and final. On fixed-gear aircraft, skip U — but the rest still apply.`,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/HFA_Cessna_172_Training_Aircraft.jpg',
+        imageAlt: 'Cessna 172 on final approach to landing',
+        imageCaption: 'GUMPS before every landing — Gas, Undercarriage, Mixture, Propeller, Seatbelts.',
+      },
+      {
+        title: '5 P\'s — In-Flight Decision Making',
+        body: `The 5 P's is the FAA's structured decision-making model for evaluating risk throughout a flight — not just before departure. Check the 5 P's every 15–20 minutes and at every major phase change:
+
+Plan: Is the original flight plan still valid? Do I need to divert or adjust?
+Plane: Is the aircraft still performing normally? Any new squawks, warnings, or abnormalities?
+Pilot: Am I still fit to fly? Has fatigue, hunger, or stress changed since departure?
+Passengers: Are passengers experiencing discomfort, airsickness, or creating distraction?
+Programming: Is the avionics/GPS routing still correct? Are I using the right frequencies?
+
+The 5 P's helps pilots stay ahead of the aircraft and catch problems before they become emergencies. It's the antidote to tunnel vision and "plan continuation bias."`,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Prog_chart.jpg',
+        imageAlt: 'Pilot reviewing charts in flight for decision making',
+        imageCaption: 'The 5 P\'s — a continuous in-flight risk check used by professional pilots.',
+      },
+    ],
+  },
+
+  // ── 9. Weather Products ───────────────────────────────────────────────────
   {
     id: 'weather-products',
     title: 'Weather Products',

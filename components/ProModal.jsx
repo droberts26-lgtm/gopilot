@@ -4,12 +4,19 @@ import { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 
 const PRO_FEATURES = [
-  'Full Test — all 131 PAR exam questions',
-  'Learn Mode — mastery-based study (3× correct)',
-  'ATC General & Commercial levels',
-  'Matching — 5 additional categories',
-  'ACS weak-area breakdown on results',
-  'FAA Exam Timer (2:30:00 countdown)',
+  'Full Test — all 131 official FAA PAR exam questions',
+  'Learn Mode — mastery-based study: every question 3× correct before it\'s done',
+  'ATC General Aviation & Commercial/ATP scenario levels',
+  'Matching Mode — 18 sets, 144 aviation term pairs across 6 categories',
+  'ACS weak-area breakdown — see exactly which topics to study after each test',
+  'FAA Exam Timer — official 2:30:00 countdown matching the real test format',
+];
+
+const FREE_FEATURES = [
+  'ATC Student Pilot level (50 scenarios)',
+  'Quick Practice — 10 random knowledge questions',
+  'Aviation Basics — 9 visual slideshow topics',
+  'Videos — 46 curated FAA training videos',
 ];
 
 /** Multicolor Google "G" logo — per Google brand guidelines */
@@ -82,7 +89,29 @@ export default function ProModal({ onClose }) {
               </div>
             </div>
 
-            {/* Features list */}
+            {/* What's already free */}
+            <div style={{
+              background: 'rgba(52,211,153,0.03)',
+              border: '1px solid rgba(52,211,153,0.12)',
+              borderRadius: 8,
+              padding: '11px 14px',
+              marginBottom: 10,
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: '#34d399', marginBottom: 8 }}>
+                YOUR FREE ACCESS INCLUDES
+              </div>
+              {FREE_FEATURES.map(f => (
+                <div key={f} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                  marginBottom: 6, fontSize: 11, color: '#6a8a74', lineHeight: 1.4,
+                }}>
+                  <span style={{ color: '#34d399', flexShrink: 0, marginTop: 1 }}>✓</span>
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Pro features list */}
             <div style={{
               background: 'rgba(255,255,255,0.02)',
               border: '1px solid #0f1d2c',
@@ -90,6 +119,9 @@ export default function ProModal({ onClose }) {
               padding: '16px 18px',
               marginBottom: 20,
             }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: '#00ff88', marginBottom: 10 }}>
+                UNLOCK WITH PRO
+              </div>
               {PRO_FEATURES.map(f => (
                 <div key={f} style={{
                   display: 'flex', alignItems: 'flex-start', gap: 10,

@@ -11,7 +11,7 @@ describe('ProModal — authenticated view', () => {
     expect(screen.getByText(/Full Test/i)).toBeInTheDocument();
     expect(screen.getByText(/Learn Mode/i)).toBeInTheDocument();
     expect(screen.getByText(/ATC General/i)).toBeInTheDocument();
-    expect(screen.getByText(/Matching/i)).toBeInTheDocument();
+    expect(screen.getByText(/Matching Mode/i)).toBeInTheDocument();
     expect(screen.getByText(/FAA Exam Timer/i)).toBeInTheDocument();
   });
 

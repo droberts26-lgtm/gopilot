@@ -9,25 +9,33 @@ const FEATURES = [
     icon: '📡',
     label: 'ATC COMMS',
     color: '#38bdf8',
-    desc: 'Real radio phraseology drills across 45 scenarios — student, general, and commercial levels.',
+    desc: 'Real radio phraseology drills across 50 scenarios — student, general, and commercial levels.',
+    freeNote: 'Student level free',
+    proNote: 'General & Commercial → Pro',
   },
   {
     icon: '📋',
     label: 'AIRMAN KNOWLEDGE',
     color: '#f59e0b',
     desc: '131 FAA exam questions with full test, quick practice, and a mastery learn mode.',
+    freeNote: 'Quick Practice (10 Qs) free',
+    proNote: 'Full Test, Learn Mode, Matching → Pro',
   },
   {
     icon: '🛩️',
     label: 'AVIATION BASICS',
     color: '#34d399',
     desc: 'Visual slideshows covering airspace, weather, aerodynamics, and instruments.',
+    freeNote: 'All topics free',
+    proNote: null,
   },
   {
     icon: '▶',
     label: 'VIDEOS',
     color: '#818cf8',
     desc: '46 curated training videos organized by FAA ACS topic area.',
+    freeNote: 'All videos free',
+    proNote: null,
   },
 ];
 
@@ -245,8 +253,28 @@ export default function SplashScreen({ onEnter }) {
               }}>
                 {f.label}
               </div>
-              <div style={{ fontSize: 11, color: '#5a7a94', lineHeight: 1.65 }}>
+              <div style={{ fontSize: 11, color: '#5a7a94', lineHeight: 1.65, marginBottom: 8 }}>
                 {f.desc}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={{
+                  fontSize: 8, letterSpacing: 1, color: '#34d399',
+                  background: 'rgba(52,211,153,0.08)',
+                  border: '1px solid rgba(52,211,153,0.2)',
+                  borderRadius: 3, padding: '2px 6px', width: 'fit-content',
+                }}>
+                  ✓ {f.freeNote}
+                </span>
+                {f.proNote && (
+                  <span style={{
+                    fontSize: 8, letterSpacing: 1, color: '#f59e0b',
+                    background: 'rgba(245,158,11,0.06)',
+                    border: '1px solid rgba(245,158,11,0.18)',
+                    borderRadius: 3, padding: '2px 6px', width: 'fit-content',
+                  }}>
+                    🔒 {f.proNote}
+                  </span>
+                )}
               </div>
             </div>
           ))}

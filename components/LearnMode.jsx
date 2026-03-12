@@ -17,6 +17,8 @@ const PdfFigure = dynamic(() => import('./PdfFigure'), { ssr: false });
 
 const PURPLE = '#a78bfa';
 
+/** Track locally which question IDs have been reported (clipboard copy). */
+
 /** Format elapsed milliseconds as m:ss */
 function formatElapsed(ms) {
   const totalSec = Math.floor(ms / 1000);
@@ -49,6 +51,7 @@ export default function LearnMode({ onBack }) {
     };
   });
 
+  const [reportedIds,   setReportedIds]   = useState(new Set());
   const [screen,        setScreen]        = useState(initState.screen);
   const [session,       setSession]       = useState(initState.session);
   const [selectedIdx,   setSelectedIdx]   = useState(null);
@@ -456,8 +459,28 @@ export default function LearnMode({ onBack }) {
           borderRadius: 8, padding: '14px 17px', marginTop: 4, marginBottom: 20,
           animation: 'popIn 0.22s ease',
         }}>
-          <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84', marginBottom: 8 }}>
-            {wasCorrect ? '✓ WELL DONE — ' : '✗ INCORRECT — '}EXPLANATION:
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 8, letterSpacing: 3, color: '#4a6a84' }}>
+              {wasCorrect ? '✓ WELL DONE — ' : '✗ INCORRECT — '}EXPLANATION:
+            </div>
+            <button
+              onClick={() => {
+                const text = `Q${currentId} (${currentQ.acsCode}): ${currentQ.question}`;
+                navigator.clipboard.writeText(text).catch(() => {});
+                setReportedIds(prev => new Set([...prev, currentId]));
+              }}
+              style={{
+                background: 'none',
+                border: `1px solid ${reportedIds.has(currentId) ? '#6a5a8a' : '#1a2436'}`,
+                borderRadius: 4, color: reportedIds.has(currentId) ? '#6a5a8a' : '#3a4a6a',
+                padding: '3px 8px', cursor: 'pointer',
+                fontFamily: "'Courier New',monospace", fontSize: 8, letterSpacing: 1,
+                flexShrink: 0, marginLeft: 8,
+              }}
+              title="Copy question ID to clipboard to report an issue"
+            >
+              {reportedIds.has(currentId) ? '✓ COPIED' : '⚑ REPORT'}
+            </button>
           </div>
           <p style={{ margin: 0, fontSize: 12.5, color: '#7a9ab4', lineHeight: 1.76 }}>
             {currentQ.explanation}

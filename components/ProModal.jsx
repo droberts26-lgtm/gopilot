@@ -40,14 +40,22 @@ function GoogleIcon() {
 export default function ProModal({ onClose }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleUnlock() {
     setLoading(true);
+    setError('');
     try {
       const res = await fetch('/api/checkout', { method: 'POST' });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'Something went wrong. Please try again.');
+        setLoading(false);
+      }
     } catch {
+      setError('Network error. Please check your connection and try again.');
       setLoading(false);
     }
   }
@@ -151,6 +159,20 @@ export default function ProModal({ onClose }) {
                 ONE-TIME UNLOCK · LIFETIME ACCESS
               </div>
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div style={{
+                marginBottom: 10, padding: '8px 12px',
+                background: 'rgba(255,80,80,0.08)',
+                border: '1px solid rgba(255,80,80,0.25)',
+                borderRadius: 6,
+                fontSize: 11, color: '#ff6b6b',
+                lineHeight: 1.5,
+              }}>
+                {error}
+              </div>
+            )}
 
             {/* Unlock button */}
             <button

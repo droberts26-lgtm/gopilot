@@ -26,7 +26,7 @@ export async function POST(request) {
   const { error } = await supabase
     .from('pro_users')
     .upsert(
-      { email: normalised, source: 'admin', granted_at: new Date().toISOString() },
+      { email: normalised, source: 'pro', granted_at: new Date().toISOString() },
       { onConflict: 'email' }
     );
 

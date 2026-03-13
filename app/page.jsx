@@ -232,7 +232,7 @@ export default function HomePage() {
         {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
         {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} proLoading={proLoading} />}
         {activeTab === 'basics'    && <AviationBasics />}
-        {activeTab === 'videos'    && <VideoLibrary />}
+        {activeTab === 'videos'    && <VideoLibrary pro={pro} proLoading={proLoading} />}
       </main>
 
       {/* ── Footer ── */}

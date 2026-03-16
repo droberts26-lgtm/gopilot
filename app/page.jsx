@@ -252,8 +252,20 @@ export default function HomePage() {
         padding: '18px 20px',
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#2a4464' }}>
+        <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#2a4464', marginBottom: 8 }}>
           GOPILOT · FAA AIM · ORDER 7110.65 · FAA-CT-8080-2H · PRIVATE PILOT ACS
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
+          <a href="/privacy" style={{ fontSize: 9, letterSpacing: 2, color: '#2a4464', textDecoration: 'none' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#3d5878'}
+            onMouseLeave={e => e.currentTarget.style.color = '#2a4464'}>
+            PRIVACY POLICY
+          </a>
+          <a href="/terms" style={{ fontSize: 9, letterSpacing: 2, color: '#2a4464', textDecoration: 'none' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#3d5878'}
+            onMouseLeave={e => e.currentTarget.style.color = '#2a4464'}>
+            TERMS OF SERVICE
+          </a>
         </div>
       </footer>
 

@@ -5,6 +5,10 @@ import { useSession, signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
+import HeroSection from '@/components/HeroSection';
+import FAQ from '@/components/FAQ';
+import OnboardingModal from '@/components/OnboardingModal';
+import ProModal from '@/components/ProModal';
 import { useProgressSync } from '@/hooks/useProgressSync';
 import { usePro } from '@/hooks/usePro';
 
@@ -49,6 +53,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('atc');
   // Guests see the splash screen; signed-in users go straight to the app
   const [showSplash, setShowSplash] = useState(!session);
+  const [proModalOpen, setProModalOpen] = useState(false);
   const { pro, loading: proLoading } = usePro();
 
   useProgressSync();
@@ -167,7 +172,7 @@ export default function HomePage() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="tab-bar-wrapper">
+          <div className="tab-bar-wrapper" data-tab-bar>
           <div style={{
             display: 'flex', gap: 0, marginTop: 4,
             overflowX: 'auto', WebkitOverflowScrolling: 'touch',
@@ -227,6 +232,9 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* ── Hero ── */}
+      <HeroSection onUnlockPro={() => setProModalOpen(true)} />
+
       {/* ── Main Content ── */}
       <main style={{ position: 'relative', zIndex: 1 }}>
         {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
@@ -235,20 +243,25 @@ export default function HomePage() {
         {activeTab === 'videos'    && <VideoLibrary pro={pro} proLoading={proLoading} />}
       </main>
 
+      {/* ── FAQ ── */}
+      <FAQ />
+
       {/* ── Footer ── */}
       <footer style={{
         borderTop: '1px solid rgba(255,255,255,0.03)',
         padding: '18px 20px',
         textAlign: 'center',
-        marginTop: 40,
       }}>
         <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#2a4464' }}>
           GOPILOT · FAA AIM · ORDER 7110.65 · FAA-CT-8080-2H · PRIVATE PILOT ACS
         </div>
-        <div style={{ fontSize: 8, letterSpacing: 2, color: '#0a1520', marginTop: 4 }}>
-          FOR TRAINING PURPOSES ONLY — NOT FOR USE IN ACTUAL FLIGHT OPERATIONS
-        </div>
       </footer>
+
+      {/* ── Onboarding (first visit) ── */}
+      <OnboardingModal />
+
+      {/* ── Pro modal (hero CTA) ── */}
+      {proModalOpen && <ProModal onClose={() => setProModalOpen(false)} />}
     </div>
   );
 }

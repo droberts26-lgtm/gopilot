@@ -39,7 +39,7 @@ export default function ProSuccessPage() {
   // Once confirmed, count down and redirect
   useEffect(() => {
     if (status !== 'confirmed') return;
-    if (countdown <= 0) { router.push('/'); return; }
+    if (countdown <= 0) { window.location.href = '/'; return; }
     const t = setTimeout(() => setCountdown(c => c - 1), 1000);
     return () => clearTimeout(t);
   }, [status, countdown, router]);
@@ -103,7 +103,7 @@ export default function ProSuccessPage() {
               account and will be available every time you sign in.
             </div>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => { window.location.href = '/'; }}
               style={{
                 width: '100%', padding: '12px',
                 background: 'rgba(0,255,136,0.1)',
@@ -156,7 +156,7 @@ export default function ProSuccessPage() {
               Try signing out and back in if features are still locked.
             </div>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => { window.location.href = '/'; }}
               style={{
                 width: '100%', padding: '12px',
                 background: 'rgba(0,255,136,0.1)',

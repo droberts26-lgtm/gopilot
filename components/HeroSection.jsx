@@ -10,9 +10,9 @@ const HIDDEN_KEY = 'gopilot_hero_hidden';
  * shows key stats, and surfaces the Pro CTA. Dismissable — preference
  * is saved to localStorage.
  *
- * @param {{ onUnlockPro: () => void }} props
+ * @param {{ onUnlockPro: () => void, pro: boolean, proLoading: boolean }} props
  */
-export default function HeroSection({ onUnlockPro }) {
+export default function HeroSection({ onUnlockPro, pro = false, proLoading = false }) {
   const { data: session } = useSession();
   const [hidden, setHidden] = useState(true); // start hidden to avoid flash
 
@@ -140,21 +140,33 @@ export default function HeroSection({ onUnlockPro }) {
             </button>
           )}
 
-          <button
-            onClick={onUnlockPro}
-            style={{
-              background: 'rgba(129,140,248,0.1)',
-              border: '1px solid rgba(129,140,248,0.25)',
+          {!proLoading && (pro ? (
+            <div style={{
+              background: 'rgba(0,255,136,0.06)',
+              border: '1px solid rgba(0,255,136,0.2)',
               borderRadius: 7, padding: '10px 22px',
-              color: '#818cf8', fontFamily: "'Courier New', monospace",
-              fontSize: 10, fontWeight: 700, letterSpacing: 2, cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.18)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.1)'; }}
-          >
-            UNLOCK PRO — $14.99
-          </button>
+              color: '#00ff88', fontFamily: "'Courier New', monospace",
+              fontSize: 10, fontWeight: 700, letterSpacing: 2,
+            }}>
+              ✓ PRO ACTIVE
+            </div>
+          ) : (
+            <button
+              onClick={onUnlockPro}
+              style={{
+                background: 'rgba(129,140,248,0.1)',
+                border: '1px solid rgba(129,140,248,0.25)',
+                borderRadius: 7, padding: '10px 22px',
+                color: '#818cf8', fontFamily: "'Courier New', monospace",
+                fontSize: 10, fontWeight: 700, letterSpacing: 2, cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.18)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.1)'; }}
+            >
+              UNLOCK PRO — $14.99
+            </button>
+          ))}
         </div>
 
         {/* Trust line */}

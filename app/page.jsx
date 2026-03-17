@@ -233,7 +233,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Hero ── */}
-      <HeroSection onUnlockPro={() => setProModalOpen(true)} />
+      <HeroSection onUnlockPro={() => setProModalOpen(true)} pro={pro} proLoading={proLoading} />
 
       {/* ── Main Content ── */}
       <main style={{ position: 'relative', zIndex: 1 }}>

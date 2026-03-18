@@ -11,6 +11,7 @@ import OnboardingModal from '@/components/OnboardingModal';
 import ProModal from '@/components/ProModal';
 import { useProgressSync } from '@/hooks/useProgressSync';
 import { usePro } from '@/hooks/usePro';
+import ParticleField from '@/components/ParticleField';
 
 const ATCSimulator    = dynamic(() => import('@/components/ATCSimulator'),    { ssr: false });
 const AirmanKnowledge = dynamic(() => import('@/components/AirmanKnowledge'), { ssr: false });
@@ -64,6 +65,7 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#060911', position: 'relative', overflow: 'hidden' }}>
+      <ParticleField />
 
       {/* ── Ambient glow — subtle depth, not a radar ── */}
       <div style={{

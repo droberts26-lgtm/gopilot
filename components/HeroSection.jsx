@@ -1,12 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 
 const HIDDEN_KEY = 'gopilot_hero_hidden';
 
+/** Smooth count-up animation */
+function useCountUp(target, duration = 1800) {
+  const [count, setCount] = useState(0);
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const startTime = performance.now();
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    const raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return count;
+}
+
+/** Top-view aircraft silhouette SVG */
+function Aircraft({ style }) {
+  return (
+    <svg viewBox="0 0 260 80" fill="white" aria-hidden="true" style={style}>
+      {/* Fuselage */}
+      <ellipse cx="130" cy="40" rx="115" ry="9" />
+      {/* Main wings */}
+      <path d="M125,39 L170,4 L174,8 L142,39 L174,72 L170,76 Z" />
+      {/* Horizontal stabilizer */}
+      <path d="M34,39 L14,24 L18,21 L44,37 L18,59 L14,56 Z" />
+      {/* Engine nacelles */}
+      <ellipse cx="155" cy="22" rx="12" ry="4" opacity="0.7" />
+      <ellipse cx="155" cy="58" rx="12" ry="4" opacity="0.7" />
+      {/* Nose */}
+      <path d="M243,37 L252,40 L243,43 Z" />
+    </svg>
+  );
+}
+
 /**
- * Hero section shown above the tab content.
+ * Hero section with atmospheric background, animated counters, and flying aircraft.
  * @param {{ onUnlockPro: () => void, pro: boolean, proLoading: boolean }} props
  */
 export default function HeroSection({ onUnlockPro, pro = false, proLoading = false }) {
@@ -22,87 +61,155 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
     setHidden(true);
   };
 
+  const q131 = useCountUp(hidden ? 0 : 131, 1600);
+  const a45  = useCountUp(hidden ? 0 : 45,  1400);
+  const v46  = useCountUp(hidden ? 0 : 46,  1500);
+
   if (hidden) return null;
 
   const stats = [
-    { value: '131', label: 'Exam Questions' },
-    { value: '45',  label: 'ATC Scenarios'  },
-    { value: '46',  label: 'Training Videos' },
+    { value: q131, label: 'Exam Questions',  color: '#38bdf8' },
+    { value: a45,  label: 'ATC Scenarios',   color: '#a78bfa' },
+    { value: v46,  label: 'Training Videos', color: '#34d399' },
   ];
 
   return (
-    <section style={{
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
-      background: 'linear-gradient(180deg, rgba(14,165,233,0.04) 0%, transparent 100%)',
-      padding: 'clamp(28px, 5vw, 52px) clamp(16px, 4vw, 32px)',
-      position: 'relative',
-      animation: 'fadeSlide 0.4s ease',
-    }}>
-      {/* Dismiss */}
+    <section
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: 'clamp(40px, 7vw, 72px) clamp(16px, 4vw, 32px)',
+      }}
+    >
+      {/* ── Layered atmospheric background ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        background: `
+          radial-gradient(ellipse at 50% 110%, rgba(14,165,233,0.18) 0%, transparent 55%),
+          radial-gradient(ellipse at 80% 20%,  rgba(99,102,241,0.07)  0%, transparent 40%),
+          radial-gradient(ellipse at 10% 80%,  rgba(56,189,248,0.05)  0%, transparent 35%),
+          linear-gradient(180deg, #020510 0%, #060c1e 50%, #0a1630 100%)
+        `,
+      }} />
+
+      {/* ── Horizon glow line ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.35), transparent)',
+        animation: 'horizonPulse 4s ease-in-out infinite',
+        zIndex: 1,
+      }} />
+
+      {/* ── Flying aircraft ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '22%', left: 0,
+        opacity: 0.07, zIndex: 1,
+        animation: 'flyAcross 28s 2s linear infinite',
+        willChange: 'transform',
+      }}>
+        <Aircraft style={{ width: 180, height: 55 }} />
+      </div>
+
+      {/* ── Second aircraft, different altitude & timing ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '65%', left: 0,
+        opacity: 0.04, zIndex: 1,
+        animation: 'flyAcross 42s 14s linear infinite',
+        willChange: 'transform',
+      }}>
+        <Aircraft style={{ width: 120, height: 37 }} />
+      </div>
+
+      {/* ── Dismiss ── */}
       <button
         onClick={dismiss}
         aria-label="Dismiss hero section"
         style={{
-          position: 'absolute', top: 14, right: 16,
+          position: 'absolute', top: 16, right: 18, zIndex: 10,
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#334155', fontSize: 16, padding: 4,
-          lineHeight: 1, transition: 'color 0.15s',
+          color: '#1e3a5f', fontSize: 18, lineHeight: 1, padding: 4,
+          transition: 'color 0.15s',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = '#94a3b8'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = '#334155'; }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#475569'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = '#1e3a5f'; }}
       >
         ✕
       </button>
 
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+      {/* ── Content ── */}
+      <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative', zIndex: 2 }}>
 
         {/* Eyebrow */}
         <div style={{
-          fontSize: 11, letterSpacing: 2, color: '#0ea5e9', marginBottom: 14,
+          fontSize: 11, letterSpacing: 2.5, color: '#0ea5e9', marginBottom: 18,
           fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 600,
-          opacity: 0.8,
+          opacity: 0.85,
+          animation: 'riseIn 0.5s ease both',
         }}>
           FAA Private Pilot · Knowledge Test Prep
         </div>
 
         {/* Headline */}
         <h1 style={{
-          fontSize: 'clamp(24px, 4.5vw, 42px)',
+          fontSize: 'clamp(28px, 5vw, 52px)',
           fontWeight: 800, color: '#f1f5f9',
           fontFamily: "'Sora', system-ui, sans-serif",
-          margin: '0 0 14px', lineHeight: 1.15,
-          letterSpacing: '-0.5px',
+          margin: '0 0 16px', lineHeight: 1.1,
+          letterSpacing: '-1px',
+          animation: 'riseIn 0.55s 0.05s ease both',
         }}>
-          Pass Your FAA Written Exam.
+          Pass Your FAA<br />Written Exam.
         </h1>
 
         {/* Sub-headline */}
         <p style={{
-          fontSize: 'clamp(13px, 2vw, 15px)', color: '#64748b',
-          lineHeight: 1.75, maxWidth: 540, margin: '0 0 32px',
-          fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 400,
+          fontSize: 'clamp(13px, 2vw, 16px)', color: '#64748b',
+          lineHeight: 1.8, maxWidth: 520, margin: '0 0 36px',
+          fontFamily: "'Inter', system-ui, sans-serif",
+          animation: 'riseIn 0.6s 0.1s ease both',
         }}>
-          The most complete online study tool for student pilots. Real exam questions,
-          ATC radio simulator, and a full video library — all in one place.
+          The most complete study tool for student pilots — real exam questions,
+          ATC radio simulator, and a curated video library, all in one place.
         </p>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
+        {/* Animated stats */}
+        <div style={{
+          display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36,
+          animation: 'riseIn 0.65s 0.15s ease both',
+        }}>
           {stats.map(s => (
-            <div key={s.label} style={{
-              background: 'rgba(14,165,233,0.06)',
-              border: '1px solid rgba(14,165,233,0.12)',
-              borderRadius: 10, padding: '12px 20px',
-              textAlign: 'center',
-            }}>
+            <div
+              key={s.label}
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 12, padding: '14px 22px',
+                textAlign: 'center', minWidth: 100,
+                transition: 'border-color 0.2s, background 0.2s, transform 0.2s',
+                cursor: 'default',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = `${s.color}40`;
+                e.currentTarget.style.background = 'rgba(255,255,255,0.055)';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
               <div style={{
-                fontSize: 26, fontWeight: 800, color: '#38bdf8',
-                fontFamily: "'Sora', system-ui, sans-serif", lineHeight: 1,
+                fontSize: 32, fontWeight: 800, color: s.color,
+                fontFamily: "'Sora', system-ui, sans-serif",
+                lineHeight: 1, minWidth: 56, tabularNums: true,
+                fontVariantNumeric: 'tabular-nums',
               }}>
                 {s.value}
               </div>
               <div style={{
-                fontSize: 10, color: '#334155', marginTop: 4, letterSpacing: 0.5,
+                fontSize: 10, color: '#475569', marginTop: 5, letterSpacing: 0.5,
                 fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
               }}>
                 {s.label}
@@ -112,20 +219,30 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         </div>
 
         {/* CTAs */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{
+          display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
+          animation: 'riseIn 0.7s 0.2s ease both',
+        }}>
           <button
             onClick={() => document.querySelector('[data-tab-bar]')?.scrollIntoView({ behavior: 'smooth' })}
             style={{
-              background: 'rgba(14,165,233,0.1)',
-              border: '1px solid rgba(14,165,233,0.25)',
-              borderRadius: 8, padding: '10px 22px',
-              color: '#38bdf8',
+              background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
+              border: 'none',
+              borderRadius: 9, padding: '11px 24px',
+              color: '#fff',
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'transform 0.15s, box-shadow 0.15s',
+              boxShadow: '0 4px 20px rgba(14,165,233,0.25)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.17)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.1)'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 28px rgba(14,165,233,0.4)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(14,165,233,0.25)';
+            }}
           >
             Start Studying →
           </button>
@@ -134,16 +251,24 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
             <button
               onClick={() => signIn('google')}
               style={{
-                background: 'none',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 8, padding: '10px 22px',
-                color: '#475569',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 9, padding: '11px 24px',
+                color: '#94a3b8',
                 fontFamily: "'Inter', system-ui, sans-serif",
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = '#cbd5e1';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = '#94a3b8';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+              }}
             >
               Sign In Free →
             </button>
@@ -151,29 +276,36 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
 
           {!proLoading && (pro ? (
             <div style={{
-              background: 'rgba(34,197,94,0.07)',
-              border: '1px solid rgba(34,197,94,0.18)',
-              borderRadius: 8, padding: '10px 20px',
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: 'rgba(34,197,94,0.08)',
+              border: '1px solid rgba(34,197,94,0.2)',
+              borderRadius: 9, padding: '11px 20px',
               color: '#4ade80',
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 13, fontWeight: 600,
             }}>
-              ✓ Pro Active
+              <span>✓</span> Pro Active
             </div>
           ) : (
             <button
               onClick={onUnlockPro}
               style={{
                 background: 'rgba(129,140,248,0.08)',
-                border: '1px solid rgba(129,140,248,0.22)',
-                borderRadius: 8, padding: '10px 22px',
+                border: '1px solid rgba(129,140,248,0.2)',
+                borderRadius: 9, padding: '11px 24px',
                 color: '#a5b4fc',
                 fontFamily: "'Inter', system-ui, sans-serif",
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(129,140,248,0.08)'; }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(129,140,248,0.15)';
+                e.currentTarget.style.borderColor = 'rgba(129,140,248,0.35)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
+                e.currentTarget.style.borderColor = 'rgba(129,140,248,0.2)';
+              }}
             >
               Unlock Pro — $14.99
             </button>
@@ -182,8 +314,9 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
 
         {/* Trust line */}
         <div style={{
-          marginTop: 22, fontSize: 11, color: '#1e3a5f', letterSpacing: 0.3,
+          marginTop: 24, fontSize: 11, color: '#1e3a5f',
           fontFamily: "'Inter', system-ui, sans-serif",
+          animation: 'riseIn 0.75s 0.25s ease both',
         }}>
           Based on FAA-CT-8080-2H · Private Pilot ACS · Updated for current test standards
         </div>

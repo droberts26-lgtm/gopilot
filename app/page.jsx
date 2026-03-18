@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
 import HeroSection from '@/components/HeroSection';
+import FeatureShowcase from '@/components/FeatureShowcase';
+import WhyGoPilot from '@/components/WhyGoPilot';
 import FAQ from '@/components/FAQ';
 import OnboardingModal from '@/components/OnboardingModal';
 import ProModal from '@/components/ProModal';
@@ -214,6 +216,12 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <HeroSection onUnlockPro={() => setProModalOpen(true)} pro={pro} proLoading={proLoading} />
+
+      {/* ── Feature Showcase ── */}
+      <FeatureShowcase />
+
+      {/* ── Why GoPilot ── */}
+      <WhyGoPilot />
 
       {/* ── Main Content ── */}
       <main style={{ position: 'relative', zIndex: 1 }}>

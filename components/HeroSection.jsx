@@ -82,14 +82,20 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         padding: 'clamp(40px, 7vw, 72px) clamp(16px, 4vw, 32px)',
       }}
     >
-      {/* ── Layered atmospheric background ── */}
+      {/* ── Hero background photo + atmospheric overlays ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        backgroundImage: `url(https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80&fit=crop&crop=center)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 55%',
+        backgroundColor: '#030812',
+      }} />
+      {/* Dark overlay + gradient for readability */}
       <div aria-hidden="true" style={{
         position: 'absolute', inset: 0, zIndex: 0,
         background: `
-          radial-gradient(ellipse at 50% 110%, rgba(14,165,233,0.18) 0%, transparent 55%),
-          radial-gradient(ellipse at 80% 20%,  rgba(99,102,241,0.07)  0%, transparent 40%),
-          radial-gradient(ellipse at 10% 80%,  rgba(56,189,248,0.05)  0%, transparent 35%),
-          linear-gradient(180deg, #020510 0%, #060c1e 50%, #0a1630 100%)
+          linear-gradient(180deg, rgba(2,5,16,0.88) 0%, rgba(6,12,30,0.82) 50%, rgba(10,22,48,0.9) 100%),
+          radial-gradient(ellipse at 50% 110%, rgba(14,165,233,0.12) 0%, transparent 55%)
         `,
       }} />
 

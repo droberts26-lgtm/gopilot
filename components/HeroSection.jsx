@@ -25,21 +25,24 @@ function useCountUp(target, duration = 1800) {
   return count;
 }
 
-/** Top-view aircraft silhouette SVG */
+/** Side-view commercial airliner silhouette */
 function Aircraft({ style }) {
   return (
-    <svg viewBox="0 0 260 80" fill="white" aria-hidden="true" style={style}>
-      {/* Fuselage */}
-      <ellipse cx="130" cy="40" rx="115" ry="9" />
-      {/* Main wings */}
-      <path d="M125,39 L170,4 L174,8 L142,39 L174,72 L170,76 Z" />
-      {/* Horizontal stabilizer */}
-      <path d="M34,39 L14,24 L18,21 L44,37 L18,59 L14,56 Z" />
-      {/* Engine nacelles */}
-      <ellipse cx="155" cy="22" rx="12" ry="4" opacity="0.7" />
-      <ellipse cx="155" cy="58" rx="12" ry="4" opacity="0.7" />
-      {/* Nose */}
-      <path d="M243,37 L252,40 L243,43 Z" />
+    <svg viewBox="0 0 200 82" fill="white" aria-hidden="true" style={style}>
+      {/* Fuselage — slim tapered body */}
+      <path d="M188,40 C183,33 168,30 148,29 L30,29 C14,29 4,34 4,40 C4,46 14,51 30,51 L148,51 C168,51 183,47 188,40 Z" />
+      {/* Cockpit windshield bump */}
+      <path d="M163,29 C158,21 143,18 133,20 C137,24 150,27 163,29 Z" />
+      {/* Main swept wing */}
+      <path d="M128,44 L84,75 L68,72 L106,46 Z" />
+      {/* Engine nacelle under wing */}
+      <ellipse cx="97" cy="71" rx="11" ry="3.5" />
+      {/* Vertical tail fin */}
+      <path d="M33,29 L23,5 L50,9 L58,29 Z" />
+      {/* Horizontal stabilizer — upper */}
+      <path d="M43,37 L17,26 L14,29 L38,39 Z" />
+      {/* Horizontal stabilizer — lower */}
+      <path d="M43,43 L17,54 L14,51 L38,41 Z" />
     </svg>
   );
 }

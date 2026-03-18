@@ -63,108 +63,83 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#070b12', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#060911', position: 'relative', overflow: 'hidden' }}>
 
-      {/* ── Background grid ── */}
+      {/* ── Ambient glow — subtle depth, not a radar ── */}
       <div style={{
-        position: 'fixed', inset: 0, opacity: 0.028, pointerEvents: 'none',
-        backgroundImage: `
-          repeating-linear-gradient(0deg, transparent, transparent 39px, #00ff88 40px),
-          repeating-linear-gradient(90deg, transparent, transparent 39px, #00ff88 40px)
-        `,
-      }} />
-
-      {/* ── Radar sweep ── */}
-      <div style={{
-        position: 'fixed', top: '50%', left: '50%',
-        width: '200vw', height: '200vh',
-        marginLeft: '-100vw', marginTop: '-100vh',
-        background: 'conic-gradient(from 0deg, transparent 345deg, rgba(0,255,136,0.018) 360deg)',
-        animation: 'radarSweep 9s linear infinite',
-        pointerEvents: 'none',
-      }} />
-
-      {/* ── Scan line ── */}
-      <div style={{
-        position: 'fixed', left: 0, right: 0, height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(0,255,136,0.07), transparent)',
-        animation: 'scanLine 8s linear infinite',
+        position: 'fixed', top: '-20%', left: '50%', transform: 'translateX(-50%)',
+        width: '80vw', height: '60vh',
+        background: 'radial-gradient(ellipse, rgba(14,165,233,0.06) 0%, transparent 70%)',
+        animation: 'driftGlow 12s ease-in-out infinite',
         pointerEvents: 'none',
       }} />
 
       {/* ── Header ── */}
       <header style={{
         position: 'relative', zIndex: 10,
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
-        background: 'rgba(7,11,18,0.8)',
-        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(6,9,17,0.88)',
+        backdropFilter: 'blur(14px)',
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, paddingBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 15, paddingBottom: 13 }}>
             {/* Logo */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{
-                  fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 900, letterSpacing: 2,
-                  color: '#f0f6ff', fontFamily: "'Courier New', monospace",
+                  fontSize: 'clamp(20px, 3.5vw, 27px)', fontWeight: 800,
+                  color: '#f1f5f9', fontFamily: "'Sora', system-ui, sans-serif",
+                  letterSpacing: '-0.3px', lineHeight: 1,
                 }}>
-                  GO<span style={{ color: '#00ff88' }}>PILOT</span>
+                  Go<span style={{ color: '#0ea5e9' }}>Pilot</span>
                 </span>
                 <span style={{
-                  fontSize: 8, letterSpacing: 4, color: '#3d5878', fontFamily: "'Courier New', monospace",
+                  fontSize: 9, fontWeight: 600, letterSpacing: 1.5,
+                  color: '#0ea5e9', background: 'rgba(14,165,233,0.1)',
+                  border: '1px solid rgba(14,165,233,0.18)',
+                  borderRadius: 4, padding: '2px 7px',
+                  fontFamily: "'Inter', system-ui, sans-serif",
                 }}>
-                  v1.0
+                  BETA
                 </span>
               </div>
-              <div style={{ fontSize: 9, letterSpacing: 3.5, color: '#3d5878', marginTop: 1 }}>
-                AVIATION TRAINING SIMULATOR
+              <div style={{
+                fontSize: 9.5, color: '#334155', marginTop: 3, letterSpacing: 1,
+                fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
+              }}>
+                Aviation Training Simulator
               </div>
             </div>
 
-            {/* Status lights + user menu */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <div className="status-lights" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                {['SYS', 'NAV', 'COM'].map((label, i) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: ['#00ff88', '#38bdf8', '#f59e0b'][i],
-                      animation: `pulse ${2 + i * 0.5}s ease infinite`,
-                      opacity: 0.8,
-                    }} />
-                    <span style={{ fontSize: 7.5, letterSpacing: 2, color: '#3d5878' }}>{label}</span>
-                  </div>
-                ))}
-                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
-              </div>
+            {/* User menu */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               {session
                 ? <UserMenu user={session.user} />
                 : (
                   <button
                     onClick={() => signIn('google')}
                     style={{
-                      padding: '6px 14px',
-                      background: 'rgba(0,255,136,0.06)',
-                      border: '1px solid rgba(0,255,136,0.25)',
-                      borderRadius: 6,
-                      color: '#00ff88',
-                      fontFamily: "'Courier New', monospace",
-                      fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                      padding: '7px 16px',
+                      background: 'rgba(14,165,233,0.08)',
+                      border: '1px solid rgba(14,165,233,0.2)',
+                      borderRadius: 8,
+                      color: '#38bdf8',
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                      fontSize: 12, fontWeight: 600,
                       cursor: 'pointer',
                       transition: 'all 0.15s',
-                      textTransform: 'uppercase',
                       whiteSpace: 'nowrap',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(0,255,136,0.12)';
-                      e.currentTarget.style.borderColor = 'rgba(0,255,136,0.5)';
+                      e.currentTarget.style.background = 'rgba(14,165,233,0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(14,165,233,0.4)';
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.background = 'rgba(0,255,136,0.06)';
-                      e.currentTarget.style.borderColor = 'rgba(0,255,136,0.25)';
+                      e.currentTarget.style.background = 'rgba(14,165,233,0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(14,165,233,0.2)';
                     }}
                   >
-                    SIGN IN / SIGN UP
+                    Sign In
                   </button>
                 )
               }
@@ -174,7 +149,7 @@ export default function HomePage() {
           {/* Tab Navigation */}
           <div className="tab-bar-wrapper" data-tab-bar>
           <div style={{
-            display: 'flex', gap: 0, marginTop: 4,
+            display: 'flex', gap: 0, marginTop: 2,
             overflowX: 'auto', WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none', msOverflowStyle: 'none',
           }}>
@@ -183,28 +158,27 @@ export default function HomePage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  background: activeTab === tab.id ? `${tab.color}10` : 'none',
+                  background: 'none',
                   border: 'none',
                   borderBottom: activeTab === tab.id ? `2px solid ${tab.color}` : '2px solid transparent',
-                  padding: '10px clamp(10px, 3vw, 22px) 12px',
+                  padding: '10px clamp(12px, 3vw, 24px) 12px',
                   cursor: 'pointer',
-                  color: activeTab === tab.id ? tab.color : '#5a7a94',
-                  fontFamily: "'Courier New', monospace",
-                  fontSize: 'clamp(9px, 2vw, 11px)',
-                  fontWeight: 700,
-                  letterSpacing: 'clamp(0.5px, 0.5vw, 2px)',
-                  textTransform: 'uppercase',
-                  transition: 'all 0.18s',
+                  color: activeTab === tab.id ? tab.color : '#475569',
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 'clamp(11px, 2vw, 12px)',
+                  fontWeight: 600,
+                  letterSpacing: '0.3px',
+                  transition: 'all 0.15s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 7,
+                  gap: 6,
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
                 }}
-                onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = tab.color; }}
-                onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#5a7a94'; }}
+                onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#94a3b8'; }}
+                onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#475569'; }}
               >
-                <span style={{ fontSize: 14 }}>{tab.icon}</span>
+                <span style={{ fontSize: 13 }}>{tab.icon}</span>
                 <span>{tab.label}</span>
               </button>
             ))}
@@ -215,16 +189,20 @@ export default function HomePage() {
 
       {/* ── Tab description strip ── */}
       <div style={{
-        background: 'rgba(255,255,255,0.008)', borderBottom: '1px solid rgba(255,255,255,0.03)',
-        padding: '8px 0',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        padding: '7px 0',
+        background: 'rgba(255,255,255,0.006)',
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 20px' }}>
           {TABS.map(tab => (
             activeTab === tab.id && (
               <div key={tab.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: tab.color, animation: 'pulse 2s ease infinite' }} />
-                <span style={{ fontSize: 10, letterSpacing: 2.5, color: tab.color, opacity: 0.7 }}>
-                  {tab.desc.toUpperCase()}
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: tab.color }} />
+                <span style={{
+                  fontSize: 11, color: '#475569',
+                  fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
+                }}>
+                  {tab.desc}
                 </span>
               </div>
             )
@@ -252,19 +230,30 @@ export default function HomePage() {
         padding: '18px 20px',
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: 8.5, letterSpacing: 3, color: '#2a4464', marginBottom: 8 }}>
-          GOPILOT · FAA AIM · ORDER 7110.65 · FAA-CT-8080-2H · PRIVATE PILOT ACS
+        <div style={{
+          fontSize: 11, color: '#1e3a5f', marginBottom: 10,
+          fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
+        }}>
+          GoPilot · Based on FAA-CT-8080-2H · Private Pilot ACS
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
-          <a href="/privacy" style={{ fontSize: 9, letterSpacing: 2, color: '#2a4464', textDecoration: 'none' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#3d5878'}
-            onMouseLeave={e => e.currentTarget.style.color = '#2a4464'}>
-            PRIVACY POLICY
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+          <a href="/privacy" style={{
+            fontSize: 11, color: '#1e3a5f', textDecoration: 'none',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.color = '#475569'}
+            onMouseLeave={e => e.currentTarget.style.color = '#1e3a5f'}>
+            Privacy Policy
           </a>
-          <a href="/terms" style={{ fontSize: 9, letterSpacing: 2, color: '#2a4464', textDecoration: 'none' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#3d5878'}
-            onMouseLeave={e => e.currentTarget.style.color = '#2a4464'}>
-            TERMS OF SERVICE
+          <a href="/terms" style={{
+            fontSize: 11, color: '#1e3a5f', textDecoration: 'none',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.color = '#475569'}
+            onMouseLeave={e => e.currentTarget.style.color = '#1e3a5f'}>
+            Terms of Service
           </a>
         </div>
       </footer>

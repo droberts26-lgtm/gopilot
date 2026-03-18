@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --bg: #070b12;
+  --bg: #060911;
   --accent-green: #00ff88;
   --accent-blue: #38bdf8;
   --accent-amber: #f59e0b;
-  --text-primary: #e2e8f0;
+  --text-primary: #e8f0fe;
   --text-muted: #3d5068;
   --border: #111c2a;
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Courier New', 'Lucida Console', monospace;
 }
 
 * {
@@ -22,35 +25,30 @@ html,
 body {
   background: var(--bg);
   color: var(--text-primary);
-  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-family: var(--font-ui);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ── Animations ── */
-@keyframes radarSweep {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
 @keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(13px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  50%       { opacity: 0.35; }
 }
 
 @keyframes popIn {
-  0%   { opacity: 0; transform: scale(0.96); }
+  0%   { opacity: 0; transform: scale(0.95); }
   100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes scanLine {
-  0%   { top: 0%; }
-  100% { top: 100%; }
+@keyframes driftGlow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.08); }
 }
 
 /* ── Scrollbar ── */
@@ -87,7 +85,7 @@ body {
   right: 0;
   bottom: 0;
   width: 40px;
-  background: linear-gradient(to right, transparent, rgba(7,11,18,0.95));
+  background: linear-gradient(to right, transparent, rgba(6,9,17,0.95));
   pointer-events: none;
 }
 

@@ -57,17 +57,13 @@ body {
 }
 
 @keyframes flyAcross {
-  0%   { transform: translateX(-180px); opacity: 0; }
-  5%   { opacity: 1; }
-  95%  { opacity: 1; }
-  100% { transform: translateX(calc(100vw + 180px)); opacity: 0; }
+  from { transform: translateX(-600px); }
+  to   { transform: translateX(calc(100vw + 600px)); }
 }
 
 @keyframes flyAcrossReverse {
-  0%   { transform: translateX(calc(100vw + 180px)); opacity: 0; }
-  5%   { opacity: 1; }
-  95%  { opacity: 1; }
-  100% { transform: translateX(-180px); opacity: 0; }
+  from { transform: translateX(calc(100vw + 600px)); }
+  to   { transform: translateX(-600px); }
 }
 
 @keyframes riseIn {

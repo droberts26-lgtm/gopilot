@@ -90,11 +90,11 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         zIndex: 1,
       }} />
 
-      {/* ── Boeing 777 — high altitude, slow ── */}
+      {/* ── Boeing 777 — high altitude, slow, left to right ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', top: '12%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 32s 0s linear infinite',
+        animation: 'flyAcross 32s -8s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/boeing777.webp" alt=""
@@ -106,7 +106,7 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
       <div aria-hidden="true" style={{
         position: 'absolute', top: '35%', left: 0,
         zIndex: 1,
-        animation: 'flyAcrossReverse 26s 8s linear infinite',
+        animation: 'flyAcrossReverse 26s -5s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/737.png" alt=""
@@ -118,7 +118,7 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
       <div aria-hidden="true" style={{
         position: 'absolute', top: '60%', left: 0,
         zIndex: 1,
-        animation: 'flyAcrossReverse 22s 18s linear infinite',
+        animation: 'flyAcrossReverse 22s -15s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/cessna.png" alt=""
@@ -126,11 +126,11 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         />
       </div>
 
-      {/* ── F-16 — fastest, lowest pass ── */}
+      {/* ── F-16 — fastest, lowest pass, left to right ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', top: '78%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 14s 5s linear infinite',
+        animation: 'flyAcross 14s -3s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/f16.png" alt=""

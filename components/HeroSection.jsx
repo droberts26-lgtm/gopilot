@@ -102,11 +102,11 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         />
       </div>
 
-      {/* ── Boeing 737 — mid altitude ── */}
+      {/* ── Boeing 737 — mid altitude, right to left ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', top: '35%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 26s 8s linear infinite',
+        animation: 'flyAcrossReverse 26s 8s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/737.png" alt=""
@@ -114,11 +114,11 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         />
       </div>
 
-      {/* ── Cessna Caravan — low and slow ── */}
+      {/* ── Cessna Caravan — low and slow, right to left ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', top: '60%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 22s 18s linear infinite',
+        animation: 'flyAcrossReverse 22s 18s linear infinite',
         willChange: 'transform',
       }}>
         <img src="/cessna.png" alt=""

@@ -25,27 +25,7 @@ function useCountUp(target, duration = 1800) {
   return count;
 }
 
-/** Side-view commercial airliner silhouette */
-function Aircraft({ style }) {
-  return (
-    <svg viewBox="0 0 200 82" fill="white" aria-hidden="true" style={style}>
-      {/* Fuselage — slim tapered body */}
-      <path d="M188,40 C183,33 168,30 148,29 L30,29 C14,29 4,34 4,40 C4,46 14,51 30,51 L148,51 C168,51 183,47 188,40 Z" />
-      {/* Cockpit windshield bump */}
-      <path d="M163,29 C158,21 143,18 133,20 C137,24 150,27 163,29 Z" />
-      {/* Main swept wing */}
-      <path d="M128,44 L84,75 L68,72 L106,46 Z" />
-      {/* Engine nacelle under wing */}
-      <ellipse cx="97" cy="71" rx="11" ry="3.5" />
-      {/* Vertical tail fin */}
-      <path d="M33,29 L23,5 L50,9 L58,29 Z" />
-      {/* Horizontal stabilizer — upper */}
-      <path d="M43,37 L17,26 L14,29 L38,39 Z" />
-      {/* Horizontal stabilizer — lower */}
-      <path d="M43,43 L17,54 L14,51 L38,41 Z" />
-    </svg>
-  );
-}
+// Plane images are in /public — used as <img> for the flyAcross animation
 
 /**
  * Hero section with atmospheric background, animated counters, and flying aircraft.
@@ -110,24 +90,32 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         zIndex: 1,
       }} />
 
-      {/* ── Flying aircraft ── */}
+      {/* ── Boeing 777 flying across ── */}
       <div aria-hidden="true" style={{
-        position: 'absolute', top: '22%', left: 0,
-        opacity: 0.07, zIndex: 1,
-        animation: 'flyAcross 28s 2s linear infinite',
+        position: 'absolute', top: '18%', left: 0,
+        zIndex: 1,
+        animation: 'flyAcross 30s 1s linear infinite',
         willChange: 'transform',
       }}>
-        <Aircraft style={{ width: 180, height: 55 }} />
+        <img
+          src="/boeing777.webp"
+          alt=""
+          style={{ width: 320, height: 'auto', opacity: 0.55, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        />
       </div>
 
-      {/* ── Second aircraft, different altitude & timing ── */}
+      {/* ── F-16 flying across at different altitude & speed ── */}
       <div aria-hidden="true" style={{
-        position: 'absolute', top: '65%', left: 0,
-        opacity: 0.04, zIndex: 1,
-        animation: 'flyAcross 42s 14s linear infinite',
+        position: 'absolute', top: '58%', left: 0,
+        zIndex: 1,
+        animation: 'flyAcross 18s 10s linear infinite',
         willChange: 'transform',
       }}>
-        <Aircraft style={{ width: 120, height: 37 }} />
+        <img
+          src="/f16.png"
+          alt=""
+          style={{ width: 200, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        />
       </div>
 
       {/* ── Dismiss ── */}

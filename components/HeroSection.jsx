@@ -90,31 +90,51 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
         zIndex: 1,
       }} />
 
-      {/* ── Boeing 777 flying across ── */}
+      {/* ── Boeing 777 — high altitude, slow ── */}
       <div aria-hidden="true" style={{
-        position: 'absolute', top: '18%', left: 0,
+        position: 'absolute', top: '12%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 30s 1s linear infinite',
+        animation: 'flyAcross 32s 0s linear infinite',
         willChange: 'transform',
       }}>
-        <img
-          src="/boeing777.webp"
-          alt=""
-          style={{ width: 320, height: 'auto', opacity: 0.55, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        <img src="/boeing777.webp" alt=""
+          style={{ width: 300, height: 'auto', opacity: 0.55, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
         />
       </div>
 
-      {/* ── F-16 flying across at different altitude & speed ── */}
+      {/* ── Boeing 737 — mid altitude ── */}
       <div aria-hidden="true" style={{
-        position: 'absolute', top: '58%', left: 0,
+        position: 'absolute', top: '35%', left: 0,
         zIndex: 1,
-        animation: 'flyAcross 18s 10s linear infinite',
+        animation: 'flyAcross 26s 8s linear infinite',
         willChange: 'transform',
       }}>
-        <img
-          src="/f16.png"
-          alt=""
-          style={{ width: 200, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        <img src="/737.png" alt=""
+          style={{ width: 260, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        />
+      </div>
+
+      {/* ── Cessna Caravan — low and slow ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '60%', left: 0,
+        zIndex: 1,
+        animation: 'flyAcross 22s 18s linear infinite',
+        willChange: 'transform',
+      }}>
+        <img src="/cessna.png" alt=""
+          style={{ width: 180, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        />
+      </div>
+
+      {/* ── F-16 — fastest, lowest pass ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '78%', left: 0,
+        zIndex: 1,
+        animation: 'flyAcross 14s 5s linear infinite',
+        willChange: 'transform',
+      }}>
+        <img src="/f16.png" alt=""
+          style={{ width: 160, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
         />
       </div>
 

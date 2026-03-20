@@ -55,7 +55,7 @@ const FEATURES = [
   },
 ];
 
-export default function FeatureShowcase() {
+export default function FeatureShowcase({ onNavigate }) {
   return (
     <section style={{
       padding: 'clamp(48px, 8vw, 88px) clamp(16px, 4vw, 32px)',
@@ -95,6 +95,7 @@ export default function FeatureShowcase() {
           {FEATURES.map(f => (
             <div
               key={f.id}
+              onClick={() => onNavigate?.(f.id)}
               style={{
                 borderRadius: 18,
                 overflow: 'hidden',
@@ -103,7 +104,7 @@ export default function FeatureShowcase() {
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.22s ease, border-color 0.22s, box-shadow 0.22s',
-                cursor: 'default',
+                cursor: 'pointer',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
@@ -189,7 +190,7 @@ export default function FeatureShowcase() {
                 </div>
 
                 {/* Access badges */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
                   <div style={{
                     fontSize: 10.5, fontWeight: 600,
                     color: '#64748b', background: 'rgba(255,255,255,0.04)',
@@ -210,6 +211,17 @@ export default function FeatureShowcase() {
                       ★ {f.proBadge}
                     </div>
                   )}
+                </div>
+
+                {/* Launch CTA */}
+                <div style={{
+                  marginTop: 'auto',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, fontWeight: 700, color: f.color,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  letterSpacing: 0.3,
+                }}>
+                  Open {f.title} →
                 </div>
               </div>
             </div>

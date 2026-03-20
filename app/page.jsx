@@ -22,6 +22,13 @@ const VideoLibrary    = dynamic(() => import('@/components/VideoLibrary'),    { 
 
 const TABS = [
   {
+    id: 'home',
+    label: 'HOME',
+    icon: '⌂',
+    color: '#94a3b8',
+    desc: '',
+  },
+  {
     id: 'atc',
     label: 'ATC COMMS',
     icon: '📡',
@@ -53,7 +60,7 @@ const TABS = [
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const [activeTab, setActiveTab] = useState('atc');
+  const [activeTab, setActiveTab] = useState('home');
   // Guests see the splash screen; signed-in users go straight to the app
   const [showSplash, setShowSplash] = useState(!session);
   const [proModalOpen, setProModalOpen] = useState(false);
@@ -191,48 +198,50 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ── Tab description strip ── */}
-      <div style={{
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
-        padding: '7px 0',
-        background: 'rgba(255,255,255,0.006)',
-      }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 20px' }}>
-          {TABS.map(tab => (
-            activeTab === tab.id && (
-              <div key={tab.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: tab.color }} />
-                <span style={{
-                  fontSize: 11, color: '#475569',
-                  fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
-                }}>
-                  {tab.desc}
-                </span>
-              </div>
-            )
-          ))}
+      {/* ── Tab description strip (hidden on home) ── */}
+      {activeTab !== 'home' && (
+        <div style={{
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
+          padding: '7px 0',
+          background: 'rgba(255,255,255,0.006)',
+        }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 20px' }}>
+            {TABS.map(tab => (
+              activeTab === tab.id && tab.desc && (
+                <div key={tab.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: tab.color }} />
+                  <span style={{
+                    fontSize: 11, color: '#475569',
+                    fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500,
+                  }}>
+                    {tab.desc}
+                  </span>
+                </div>
+              )
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Hero ── */}
-      <HeroSection onUnlockPro={() => setProModalOpen(true)} pro={pro} proLoading={proLoading} />
+      {/* ── Home landing page ── */}
+      {activeTab === 'home' && (
+        <>
+          <HeroSection onUnlockPro={() => setProModalOpen(true)} onNavigate={setActiveTab} pro={pro} proLoading={proLoading} />
+          <FeatureShowcase onNavigate={setActiveTab} />
+          <WhyGoPilot />
+          <FAQ />
+        </>
+      )}
 
-      {/* ── Feature Showcase ── */}
-      <FeatureShowcase />
-
-      {/* ── Why GoPilot ── */}
-      <WhyGoPilot />
-
-      {/* ── Main Content ── */}
-      <main style={{ position: 'relative', zIndex: 1 }}>
-        {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
-        {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} proLoading={proLoading} />}
-        {activeTab === 'basics'    && <AviationBasics />}
-        {activeTab === 'videos'    && <VideoLibrary pro={pro} proLoading={proLoading} />}
-      </main>
-
-      {/* ── FAQ ── */}
-      <FAQ />
+      {/* ── Training tools ── */}
+      {activeTab !== 'home' && (
+        <main style={{ position: 'relative', zIndex: 1 }}>
+          {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
+          {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} proLoading={proLoading} />}
+          {activeTab === 'basics'    && <AviationBasics />}
+          {activeTab === 'videos'    && <VideoLibrary pro={pro} proLoading={proLoading} />}
+        </main>
+      )}
 
       {/* ── Footer ── */}
       <footer style={{

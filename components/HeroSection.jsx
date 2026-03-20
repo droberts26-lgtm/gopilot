@@ -31,7 +31,7 @@ function useCountUp(target, duration = 1800) {
  * Hero section with atmospheric background, animated counters, and flying aircraft.
  * @param {{ onUnlockPro: () => void, pro: boolean, proLoading: boolean }} props
  */
-export default function HeroSection({ onUnlockPro, pro = false, proLoading = false }) {
+export default function HeroSection({ onUnlockPro, onNavigate, pro = false, proLoading = false }) {
   const { data: session } = useSession();
   const [hidden, setHidden] = useState(true);
 
@@ -241,7 +241,7 @@ export default function HeroSection({ onUnlockPro, pro = false, proLoading = fal
           animation: 'riseIn 0.7s 0.2s ease both',
         }}>
           <button
-            onClick={() => document.querySelector('[data-tab-bar]')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => onNavigate?.('atc')}
             style={{
               background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
               border: 'none',

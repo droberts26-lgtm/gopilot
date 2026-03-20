@@ -60,8 +60,21 @@ export default function FeatureShowcase({ onNavigate }) {
     <section style={{
       padding: 'clamp(48px, 8vw, 88px) clamp(16px, 4vw, 32px)',
       position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      {/* A321 background photo */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        backgroundImage: 'url(/a321.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 40%',
+      }} />
+      {/* Dark overlay for readability */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        background: 'linear-gradient(180deg, rgba(4,8,20,0.88) 0%, rgba(6,12,28,0.82) 50%, rgba(4,8,20,0.92) 100%)',
+      }} />
+      <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Section header */}
         <div style={{ textAlign: 'center', marginBottom: 52 }}>

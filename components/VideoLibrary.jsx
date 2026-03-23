@@ -363,12 +363,6 @@ function LockedVideoCard({ video, onUnlock }) {
 
       {/* Info */}
       <div style={{ padding: '12px 14px 14px' }}>
-        <div style={{
-          fontSize: 12.5, fontWeight: 600, color: '#4a6a84',
-          lineHeight: 1.45, marginBottom: 10,
-        }}>
-          {video.title}
-        </div>
         <button
           onClick={onUnlock}
           style={{

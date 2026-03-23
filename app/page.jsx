@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import SplashScreen from '@/components/SplashScreen';
 import UserMenu from '@/components/UserMenu';
 import HeroSection from '@/components/HeroSection';
 import FeatureShowcase from '@/components/FeatureShowcase';
@@ -61,16 +60,10 @@ const TABS = [
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('home');
-  // Guests see the splash screen; signed-in users go straight to the app
-  const [showSplash, setShowSplash] = useState(!session);
   const [proModalOpen, setProModalOpen] = useState(false);
   const { pro, loading: proLoading } = usePro();
 
   useProgressSync();
-
-  if (showSplash && !session) {
-    return <SplashScreen onEnter={() => setShowSplash(false)} />;
-  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#060911', position: 'relative', overflow: 'hidden' }}>

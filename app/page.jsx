@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import UserMenu from '@/components/UserMenu';
@@ -62,6 +62,13 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home');
   const [proModalOpen, setProModalOpen] = useState(false);
   const { pro, loading: proLoading } = usePro();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   useProgressSync();
 

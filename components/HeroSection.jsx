@@ -126,6 +126,18 @@ export default function HeroSection({ onUnlockPro, onNavigate, pro = false, proL
         />
       </div>
 
+      {/* ── Boeing 747 — right to left ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '48%', left: 0,
+        zIndex: 1,
+        animation: 'flyAcrossReverse 28s -12s linear infinite',
+        willChange: 'transform',
+      }}>
+        <img src="/747.png" alt=""
+          style={{ width: 280, height: 'auto', opacity: 0.5, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
+        />
+      </div>
+
       {/* ── F-16 — fastest, lowest pass, left to right ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', top: '78%', left: 0,

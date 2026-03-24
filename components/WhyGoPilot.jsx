@@ -38,9 +38,9 @@ export default function WhyGoPilot() {
       {/* Background photo with overlay */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(https://images.unsplash.com/photo-1559686043-aef0f1a89a27?w=1920&q=80&fit=crop&crop=center)`,
+        backgroundImage: `url(/cockpit.avif)`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center 40%',
+        backgroundPosition: 'center center',
         backgroundColor: '#0a1628',
       }} />
       <div style={{

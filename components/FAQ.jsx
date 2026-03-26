@@ -112,9 +112,28 @@ export default function FAQ() {
 
   return (
     <section style={{
-      maxWidth: 800, margin: '0 auto',
-      padding: 'clamp(40px, 7vw, 72px) clamp(16px, 4vw, 32px)',
+      position: 'relative',
+      overflow: 'hidden',
+      borderTop: '1px solid rgba(255,255,255,0.05)',
     }}>
+      {/* Background photo */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'url(/faq-bg.webp)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 30%',
+      }} />
+      {/* Dark overlay */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(4,8,20,0.93) 0%, rgba(6,12,28,0.90) 50%, rgba(4,8,20,0.95) 100%)',
+      }} />
+
+      <div style={{
+        position: 'relative', zIndex: 1,
+        maxWidth: 800, margin: '0 auto',
+        padding: 'clamp(40px, 7vw, 72px) clamp(16px, 4vw, 32px)',
+      }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
         <div style={{
@@ -152,6 +171,7 @@ export default function FAQ() {
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
         For training purposes only — not for use in actual flight operations
+      </div>
       </div>
     </section>
   );

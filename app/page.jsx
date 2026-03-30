@@ -14,10 +14,11 @@ import { useProgressSync } from '@/hooks/useProgressSync';
 import { usePro } from '@/hooks/usePro';
 import ParticleField from '@/components/ParticleField';
 
-const ATCSimulator    = dynamic(() => import('@/components/ATCSimulator'),    { ssr: false });
-const AirmanKnowledge = dynamic(() => import('@/components/AirmanKnowledge'), { ssr: false });
-const AviationBasics  = dynamic(() => import('@/components/AviationBasics'),  { ssr: false });
-const VideoLibrary    = dynamic(() => import('@/components/VideoLibrary'),    { ssr: false });
+const ATCSimulator     = dynamic(() => import('@/components/ATCSimulator'),     { ssr: false });
+const AirmanKnowledge  = dynamic(() => import('@/components/AirmanKnowledge'),  { ssr: false });
+const Part107Knowledge = dynamic(() => import('@/components/Part107Knowledge'), { ssr: false });
+const AviationBasics   = dynamic(() => import('@/components/AviationBasics'),   { ssr: false });
+const VideoLibrary     = dynamic(() => import('@/components/VideoLibrary'),     { ssr: false });
 
 const TABS = [
   {
@@ -40,6 +41,13 @@ const TABS = [
     icon: '📋',
     color: '#f59e0b',
     desc: 'FAA Private Pilot written exam prep',
+  },
+  {
+    id: 'part107',
+    label: 'PART 107',
+    icon: '🚁',
+    color: '#22d3ee',
+    desc: 'FAA Part 107 Remote Pilot knowledge test prep',
   },
   {
     id: 'basics',
@@ -238,6 +246,7 @@ export default function HomePage() {
         <main style={{ position: 'relative', zIndex: 1 }}>
           {activeTab === 'atc'       && <ATCSimulator pro={pro} proLoading={proLoading} />}
           {activeTab === 'knowledge' && <AirmanKnowledge pro={pro} proLoading={proLoading} />}
+          {activeTab === 'part107'   && <Part107Knowledge pro={pro} proLoading={proLoading} />}
           {activeTab === 'basics'    && <AviationBasics />}
           {activeTab === 'videos'    && <VideoLibrary pro={pro} proLoading={proLoading} />}
         </main>

@@ -9,6 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { parQuestions, figurePdfPages } from '@/data/parQuestions';
+import { part107Questions } from '@/data/part107Questions';
 import { scenarios, levelInfo } from '@/data/atcScenarios';
 import { aviationTopics } from '@/data/aviationLessons';
 import { validateParQuestionBank, validateAtcScenarioBank } from '@/lib/validators';
@@ -260,5 +261,86 @@ describe('figurePdfPages mapping', () => {
     requiredFigures.forEach(fig => {
       expect(figurePdfPages[fig], `Missing required Figure ${fig}`).toBeDefined();
     });
+  });
+});
+
+// ─── Part 107 question bank ───────────────────────────────────────────────────
+
+describe('Part 107 question bank — data integrity', () => {
+  it('exports an array of at least 40 questions', () => {
+    expect(Array.isArray(part107Questions)).toBe(true);
+    expect(part107Questions.length).toBeGreaterThanOrEqual(40);
+  });
+
+  it('all IDs are unique positive integers', () => {
+    const ids = part107Questions.map(q => q.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    ids.forEach(id => {
+      expect(Number.isInteger(id) && id > 0, `Invalid id: ${id}`).toBe(true);
+    });
+  });
+
+  it('has sequential IDs from 1 to N', () => {
+    const ids = part107Questions.map(q => q.id).sort((a, b) => a - b);
+    expect(ids).toEqual(Array.from({ length: part107Questions.length }, (_, i) => i + 1));
+  });
+
+  it('every question has exactly one correct option', () => {
+    part107Questions.forEach(q => {
+      const correct = q.options.filter(o => o.correct);
+      expect(correct, `Q${q.id} should have exactly 1 correct option`).toHaveLength(1);
+    });
+  });
+
+  it('every question has a non-empty explanation (min 20 chars)', () => {
+    part107Questions.forEach(q => {
+      expect(q.explanation.trim().length, `Q${q.id} missing explanation`).toBeGreaterThan(20);
+    });
+  });
+
+  it('every question has a non-empty question text', () => {
+    part107Questions.forEach(q => {
+      expect(q.question.trim().length, `Q${q.id} has empty question text`).toBeGreaterThan(0);
+    });
+  });
+
+  it('every question has a figures array (may be empty)', () => {
+    part107Questions.forEach(q => {
+      expect(Array.isArray(q.figures), `Q${q.id} missing figures array`).toBe(true);
+    });
+  });
+
+  it('every question has 2–4 options', () => {
+    part107Questions.forEach(q => {
+      expect(q.options.length, `Q${q.id} has wrong number of options`).toBeGreaterThanOrEqual(2);
+      expect(q.options.length, `Q${q.id} has wrong number of options`).toBeLessThanOrEqual(4);
+    });
+  });
+
+  it('all options use valid letters (A, B, C, or D)', () => {
+    part107Questions.forEach(q => {
+      q.options.forEach(opt => {
+        expect(['A', 'B', 'C', 'D'], `Q${q.id} has invalid option letter: "${opt.letter}"`).toContain(opt.letter);
+      });
+    });
+  });
+
+  it('no option text is repeated within a single question', () => {
+    part107Questions.forEach(q => {
+      const texts = q.options.map(o => o.text.trim());
+      expect(new Set(texts).size, `Q${q.id} has duplicate option texts`).toBe(texts.length);
+    });
+  });
+
+  it('all ACS codes follow the UA.*.*.* format', () => {
+    const pattern = /^UA\.[IVX]+\.[A-Z]+\.[A-Z0-9]+[a-z]?$/;
+    part107Questions.forEach(q => {
+      expect(pattern.test(q.acsCode), `Q${q.id} has invalid ACS code: "${q.acsCode}"`).toBe(true);
+    });
+  });
+
+  it('covers at least 5 distinct UA topic areas', () => {
+    const areas = new Set(part107Questions.map(q => q.acsCode.split('.').slice(0, 2).join('.')));
+    expect(areas.size).toBeGreaterThanOrEqual(5);
   });
 });

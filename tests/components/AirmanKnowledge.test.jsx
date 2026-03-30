@@ -243,9 +243,9 @@ describe('AirmanKnowledge', () => {
       expect(screen.getByText(/RETAKE TEST/i)).toBeInTheDocument();
     });
 
-    it('does NOT show ACS breakdown for quick practice (only for full test)', () => {
+    it('shows ACS breakdown for quick practice', () => {
       completeQuickPractice();
-      expect(screen.queryByText(/PERFORMANCE BY ACS TOPIC AREA/i)).toBeNull();
+      expect(screen.getByText(/PERFORMANCE BY ACS TOPIC AREA/i)).toBeInTheDocument();
     });
   });
 
